@@ -1,0 +1,21 @@
+{
+  "name": "datetime",
+  "version": "0.0.0",
+  "description": "Date and time library similar to Python's \"datetime\" package.",
+  "module": "datetime.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/silane/datetime-js.git"
+  },
+  "author": "silane",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@babel/core": "^7.5.5",
+    "@babel/preset-env": "^7.5.5",
+    "babel-jest": "^24.9.0",
+    "jest": "^24.9.0"
+  }
+}
