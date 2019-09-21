@@ -125,7 +125,7 @@ describe('TimeDelta', () => {
         [0, 0, 389.5, 0, 0, 0, 0, 0, 0, 390],
         [0, 0, 0, 3000.005, 3.25, 0.125, 0,
          0, 3 + 3.25 * 60 + 0.125 * 3600, 5],
-    ])('can normalizes constructor arguments of days=%j, seconds=%j, ' +
+    ])('can normalize constructor arguments of days=%j, seconds=%j, ' +
        'microseconds=%j, milliseconds=%j, minutes=%j, hours=%j, weeks=%j',
        (days, seconds, microseconds, milliseconds, minutes, hours, weeks,
         expectedDays, expectedSeconds, expectedMicroseconds) => {
@@ -164,14 +164,14 @@ describe('TimeDelta', () => {
         expect(cmp(TimeDelta.resolution, new TimeDelta({microseconds: 1}))).toBe(0);
     });
 
-    test('throws error constructing TimeDelta lesser than "min"', () => {
+    test('throws an error constructing TimeDelta lesser than "min"', () => {
         const min = TimeDelta.min;
         expect(() => new TimeDelta(
             {days: min.days, seconds: min.seconds, microseconds: min.microseconds - 1}
         )).toThrow(RangeDateTimeError);
     });
 
-    test('throws error constructing TimeDelta greater than "max"', () => {
+    test('throws an error constructing TimeDelta greater than "max"', () => {
         const max = TimeDelta.max;
         expect(() => new TimeDelta(
             {days: max.days, seconds: max.seconds, microseconds: max.microseconds + 1}
@@ -281,7 +281,7 @@ describe('Date', () => {
     test.each([
         ['201-09-23'], ['0938/02/11'], ['8477-11-31'], ['03789-04-12'],
         ['2940-01-aa'],
-    ])('fromISOFormat("%s") throws error', (str) => {
+    ])('fromISOFormat("%s") throws an error', (str) => {
         expect(() => Date.fromISOFormat(str)).toThrow();
     })
 
@@ -397,7 +397,8 @@ describe('TimeZone', () => {
         expect(cmp(tz.fromUTC(dtUTC), dt)).toBe(0);
     });
 
-    test('throws error calling "fromUTC(dt)" with "dt" of different TimeZone instance', () => {
+    test('throws an error calling "fromUTC(dt)" with "dt" of different ' +
+         'TimeZone instance', () => {
         const offset = new TimeDelta({hours: -15, minutes: -34});
         const tz1 = new TimeZone(offset);
         const tz2 = new TimeZone(offset);
@@ -606,7 +607,7 @@ describe('Time', () => {
 });
 
 describe('DateTime', () => {
-    test('hour, minute, second, microsecond, tzInfo and fold props', () =>{
+    test('hour, minute, second, microsecond, tzInfo and fold props', () => {
         const tzInfo = new TimeZone(new TimeDelta({}));
         const dt = new DateTime(5934, 9, 12, 21, 19, 44, 871048, tzInfo, 1);
         expect(dt.year).toBe(5934);
@@ -781,7 +782,8 @@ describe('DateTime', () => {
         if(expected.utcOffset() == null)
             expect(received.utcOffset()).toBeNull();
         else
-            expect(received.utcOffset()).toBeEqualDateTime(expected.utcOffset());
+            expect(received.utcOffset())
+                .toBeEqualDateTime(expected.utcOffset());
     });
 
     test('toStdDate()', () => {
@@ -962,7 +964,8 @@ describe('DateTime', () => {
         [' ', 'seconds', '2948-04-13 09:33:00+03:34'],
         ['T', 'minutes', '2948-04-13T09:33+03:34'],
         ['abcd', 'hours', '2948-04-13abcd09+03:34'],
-    ])('isoFormat("%s", "%s") of aware DateTime', (sep, timespec, expected) => {
+    ])('isoFormat("%s", "%s") of aware DateTime',
+       (sep, timespec, expected) => {
         const dt = new DateTime(2948, 4, 13, 9, 33, 0, 0, new TimeZone(
             new TimeDelta({hours: 3, minutes: 34})));
         expect(dt.isoFormat(sep, timespec)).toBe(expected);
@@ -1080,7 +1083,7 @@ describe('sub', () => {
         }
     });
 
-    test('throws error taking difference between naive and aware DateTime',
+    test('throws an error taking difference between naive and aware DateTime',
          () =>{
         const naive = new DateTime(1, 1, 1, 0, 0, 0, 0, null);
         const aware = new DateTime(1, 1, 1, 0, 0, 0, 0,
