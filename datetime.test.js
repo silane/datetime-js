@@ -120,6 +120,11 @@ describe('TimeDelta', () => {
          108, 4 * 60 * 60, 0],
         [38221383, 78276759, 77745343, 22282008, 91443959, 93016217, 68836049,
          524013810, 60258, 753343],
+        [1.5, 0, 0, 0, 0, 0, 0, 1, 3600 * 12, 0, 0],
+        [0, 7.75, 0, 0, 0, 0, 0, 0, 7, 750000],
+        [0, 0, 389.5, 0, 0, 0, 0, 0, 0, 390],
+        [0, 0, 0, 3000.005, 3.25, 0.125, 0,
+         0, 3 + 3.25 * 60 + 0.125 * 3600, 5],
     ])('can normalizes constructor arguments of days=%j, seconds=%j, ' +
        'microseconds=%j, milliseconds=%j, minutes=%j, hours=%j, weeks=%j',
        (days, seconds, microseconds, milliseconds, minutes, hours, weeks,

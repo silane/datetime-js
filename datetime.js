@@ -200,6 +200,13 @@ export class TimeDelta {
         seconds += hours * 3600
         days += weeks * 7
 
+        let frac;
+        [days, frac] = divmod(days, 1);
+        seconds += frac * 3600 * 24;
+        [seconds, frac] = divmod(seconds, 1);
+        microseconds += frac * 1000 ** 2;
+        microseconds = Math.round(microseconds);
+
         let div, mod;
         [div, mod] = divmod(microseconds, 1000 ** 2)
         microseconds = mod
