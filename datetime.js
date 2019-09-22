@@ -376,9 +376,8 @@ export class Date {
     }
 
     strftime(format) {
-        // TODO: If format contains hour, minute, second or microsecond code,
-        //       behavior is undefined.
-        return strftime(this, format)
+        const dt = DateTime.combine(this, new Time());
+        return strftime(dt, format);
     }
 
     toString() {
@@ -644,9 +643,8 @@ export class Time {
     }
 
     strftime(format) {
-        // TODO: If format contains year, month or day code,
-        //       behavior is undefined.
-        return strftime(this, format)
+        const dt = DateTime.combine(new Date(1900, 1, 1), this);
+        return strftime(dt, format);
     }
 
     toString() {
