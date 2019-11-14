@@ -4,7 +4,8 @@
   "description": "Date and time library similar to Python's \"datetime\" package.",
   "module": "datetime.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "build": "babel datetime.js --out-dir lib"
   },
   "repository": {
     "type": "git",
@@ -13,6 +14,7 @@
   "author": "silane",
   "license": "Apache-2.0",
   "devDependencies": {
+    "@babel/cli": "^7.7.0",
     "@babel/core": "^7.5.5",
     "@babel/preset-env": "^7.5.5",
     "babel-jest": "^24.9.0",
