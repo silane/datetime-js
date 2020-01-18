@@ -4,7 +4,8 @@
   "description": "Date and time library similar to Python's \"datetime\" package.",
   "module": "datetime.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "build": "rollup -c"
   },
   "repository": {
     "type": "git",
@@ -16,6 +17,7 @@
     "@babel/core": "^7.5.5",
     "@babel/preset-env": "^7.5.5",
     "babel-jest": "^24.9.0",
-    "jest": "^24.9.0"
+    "jest": "^24.9.0",
+    "rollup": "^1.29.0"
   }
 }
