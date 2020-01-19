@@ -1,3 +1,8 @@
+import resolve from '@rollup/plugin-node-resolve';
+import babel from 'rollup-plugin-babel';
+import commonjs from '@rollup/plugin-commonjs';
+
+
 module.exports = [{
     input: 'datetime.js',
     output: [{
@@ -8,4 +13,20 @@ module.exports = [{
         file: 'lib/datetime.esm.js',
         format: 'esm',
     }],
+    plugins: [
+        resolve(),
+        babel({
+            exclude: 'node_modules/**',
+            presets: [[
+                '@babel/env',
+                {
+                    targets: 'defaults',
+                    modules: false,
+                    useBuiltIns: 'usage',
+                    corejs: 3,
+                },
+            ]],
+        }),
+        commonjs(),
+    ],
 }];
