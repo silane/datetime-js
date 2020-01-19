@@ -9,9 +9,6 @@ module.exports = [{
         file: 'lib/datetime.umd.js',
         format: 'umd',
         name: 'datetime',
-    }, {
-        file: 'lib/datetime.esm.js',
-        format: 'esm',
     }],
     plugins: [
         resolve(),
