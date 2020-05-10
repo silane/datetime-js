@@ -1,10 +1,14 @@
 {
   "name": "datetime",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Date and time library similar to Python's \"datetime\" package.",
   "module": "datetime.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "build": "npm run build:esm && npm run build:cjs && npm run build:browser",
+    "build:esm": "babel --env-name node-esm -o lib/datetime.esm.js datetime.js",
+    "build:cjs": "babel --env-name node-cjs -o lib/datetime.cjs.js datetime.js",
+    "build:browser": "rollup -c"
   },
   "repository": {
     "type": "git",
@@ -13,9 +17,17 @@
   "author": "silane",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@babel/core": "^7.5.5",
-    "@babel/preset-env": "^7.5.5",
-    "babel-jest": "^24.9.0",
-    "jest": "^24.9.0"
+    "@babel/cli": "^7.8.4",
+    "@babel/core": "^7.9.6",
+    "@babel/preset-env": "^7.9.6",
+    "@rollup/plugin-commonjs": "^11.1.0",
+    "@rollup/plugin-node-resolve": "^7.1.3",
+    "babel-jest": "^26.0.1",
+    "jest": "^26.0.1",
+    "rollup": "^2.8.2",
+    "rollup-plugin-babel": "^4.4.0"
+  },
+  "dependencies": {
+    "core-js": "^3.6.5"
   }
 }

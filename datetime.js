@@ -200,6 +200,13 @@ export class TimeDelta {
         seconds += hours * 3600
         days += weeks * 7
 
+        let frac;
+        [days, frac] = divmod(days, 1);
+        seconds += frac * 3600 * 24;
+        [seconds, frac] = divmod(seconds, 1);
+        microseconds += frac * 1000 ** 2;
+        microseconds = Math.round(microseconds);
+
         let div, mod;
         [div, mod] = divmod(microseconds, 1000 ** 2)
         microseconds = mod
@@ -369,9 +376,8 @@ export class Date {
     }
 
     strftime(format) {
-        // TODO: If format contains hour, minute, second or microsecond code,
-        //       behavior is undefined.
-        return strftime(this, format)
+        const dt = DateTime.combine(this, new Time());
+        return strftime(dt, format);
     }
 
     toString() {
@@ -637,9 +643,8 @@ export class Time {
     }
 
     strftime(format) {
-        // TODO: If format contains year, month or day code,
-        //       behavior is undefined.
-        return strftime(this, format)
+        const dt = DateTime.combine(new Date(1900, 1, 1), this);
+        return strftime(dt, format);
     }
 
     toString() {
