@@ -1,6 +1,7 @@
 import diff from 'jest-diff';
-import {MAXYEAR, MINYEAR, TimeDelta, Date, TimeZone, Time, DateTime,
-        cmp, add, sub, ValueDateTimeError, RangeDateTimeError, LOCALTZINFO
+import {
+    MAXYEAR, MINYEAR, TimeDelta, Date, TimeZone, Time, DateTime,
+    neg, cmp, add, sub, ValueDateTimeError, RangeDateTimeError, LOCALTZINFO,
 } from './datetime.js';
 
 
@@ -1107,5 +1108,61 @@ describe('sub', () => {
                                    new TimeZone(new TimeDelta({})));
         expect(() => sub(naive, aware)).toThrow();
         expect(() => sub(aware, naive)).toThrow();
+    });
+});
+
+describe('neg', () => {
+    test.each([
+        [new TimeDelta({days: -128952}),
+         new TimeDelta({days: 128952})],
+        [new TimeDelta({days: 123, seconds: -2998, microseconds: 423245}),
+         new TimeDelta({days: -123, seconds: 2998, microseconds: -423245})],
+    ])('negation of %s to be %s', (a, expected) => {
+        const received = neg(a);
+        expect(received).toBeEqualDateTime(expected);
+    });
+});
+
+describe('cmp', () => {
+    test.each([
+        [new TimeDelta({microseconds: 1}), new TimeDelta({microseconds: 0}), 1],
+        [new TimeDelta({seconds: -1}), new TimeDelta({microseconds: 1}), -1],
+        [new TimeDelta({days: -1}), new TimeDelta({days: -1}), 0],
+        [new DateTime(888, 3, 4, 12, 3, 23, 829485,
+                      new TimeZone(new TimeDelta({hours: -10}))),
+         new DateTime(888, 3, 4, 12, 3, 23, 829485,
+                      new TimeZone(new TimeDelta({hours: -9}))), 1],
+        [new DateTime(2954, 1, 24, 2, 54, 20, 23546),
+         new DateTime(2955, 1, 24, 2, 54, 20, 23546), -1],
+        [new DateTime(1252, 5, 21, 18, 7, 43, 3241,
+                      new TimeZone(new TimeDelta({minutes: 121}))),
+         new DateTime(1252, 5, 21, 2, 23, 43, 3241,
+                      new TimeZone(new TimeDelta({minutes: -823}))), 0],
+        [new Date(1945, 2, 5), new Date(1921, 12, 31), 1],
+        [new Date(2894, 11, 12), new Date(2894, 11, 13), -1],
+        [new Date(543, 6, 16), new Date(543, 6, 16), 0],
+        [new Time(22, 43, 23, 27845), new Time(22, 43, 23, 27844), 1],
+        [new Time(9, 31, 32, 693903, new TimeZone(new TimeDelta({hours: 14}))),
+         new Time(22, 31, 32, 693903, new TimeZone(new TimeDelta({hours: 2}))), -1],
+        [new Time(6, 51, 0, 0, new TimeZone(new TimeDelta({minutes: 394}))),
+         new Time(0, 5, 0, 0, new TimeZone(new TimeDelta({minutes: -12}))), 0]
+    ])('cmp(%s, %s) to be %d', (a, b, expected) => {
+        const received = cmp(a, b);
+        expect(received).toBe(expected);
+    });
+
+    test('throws an error comparing naive and aware DateTime', () =>{
+        const naive = new DateTime(1, 1, 1, 0, 0, 0, 0, null);
+        const aware = new DateTime(1, 1, 1, 0, 0, 0, 0,
+                                   new TimeZone(new TimeDelta({})));
+        expect(() => cmp(naive, aware)).toThrow();
+        expect(() => cmp(aware, naive)).toThrow();
+    });
+
+    test('throws an error comparing naive and aware Time', () =>{
+        const naive = new Time(0, 0, 0, 0, null);
+        const aware = new Time(0, 0, 0, 0, new TimeZone(new TimeDelta({})));
+        expect(() => cmp(naive, aware)).toThrow();
+        expect(() => cmp(aware, naive)).toThrow();
     });
 });
