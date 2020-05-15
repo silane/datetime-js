@@ -1377,7 +1377,7 @@ export function add(a, b) {
     if(a instanceof TimeDelta && b instanceof Date) {
         return date_plus_timedelta(b, a)
     }
-    throw new TypeError('Cannot add these two types.')
+    throw new TypeDateTimeError('Cannot add these two types.')
 }
 
 
@@ -1405,7 +1405,7 @@ export function sub(a, b) {
         if(!(aOffset == null && bOffset == null) &&
            a.tzInfo !== b.tzInfo) {
             if(aOffset == null || bOffset == null)
-                throw new TypeError(
+                throw new TypeDateTimeError(
                     'Cannot subtract naive "DateTime" and aware "DateTime"')
             a = sub(a, aOffset)
             b = sub(b, bOffset)
@@ -1424,7 +1424,7 @@ export function sub(a, b) {
     if(a instanceof Date && b instanceof Date) {
         return new TimeDelta({days: a.toOrdinal() - b.toOrdinal()})
     }
-    throw new TypeError('Cannnot subtract these two types.')
+    throw new TypeDateTimeError('Cannnot subtract these two types.')
 }
 
 
@@ -1436,7 +1436,7 @@ export function neg(a) {
             microseconds: -a.microseconds,
         })
     }
-    throw new TypeError('Cannot negate this type.')
+    throw new TypeDateTimeError('Cannot negate this type.')
 }
 
 
@@ -1479,7 +1479,7 @@ export function cmp(a, b) {
         if(!(aOffset == null && bOffset == null) &&
            a.tzInfo !== b.tzInfo) {
             if(aOffset == null || bOffset == null)
-                throw new TypeError(
+                throw new TypeDateTimeError(
                     'Cannot compare naive "DateTime" to aware "DateTime"')
             a = sub(a, aOffset)
             b = sub(b, bOffset)
@@ -1512,7 +1512,7 @@ export function cmp(a, b) {
         if(!(aOffset == null && bOffset == null) &&
            a.tzInfo !== b.tzInfo) {
             if(aOffset == null || bOffset == null)
-                throw new TypeError(
+                throw new TypeDateTimeError(
                     'Cannot compare naive "Time" object to aware "Time" object')
             a = subtractTimeDeltaFromTime(a, aOffset)
             b = subtractTimeDeltaFromTime(b, bOffset)
@@ -1529,5 +1529,5 @@ export function cmp(a, b) {
         c = _comp(a.fold, b.fold)
         return c
     }
-    throw new TypeError('Cannot compare these two types.')
+    throw new TypeDateTimeError('Cannot compare these two types.')
 }
