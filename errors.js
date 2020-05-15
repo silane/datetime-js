@@ -27,26 +27,21 @@ export class NotImplementedDateTimeError extends DateTimeError {
         super("Not implemented.");
     }
 }
+/**
+ * Raised when an operation or function is applied to an object of
+ * inappropriate type.
+ */
 export class TypeDateTimeError extends DateTimeError {
-    constructor(parameterName, parameterValue, message) {
+    constructor(message='Type error.'){
         super(message);
-        this.parameterName = parameterName;
-        this.parameterValue = parameterValue;
     }
 }
 /**
- * Raised when an function receives an argument that has the right type but an
- * inappropriate value.
+ * Raised when an operation or function receives an argument that has the
+ * right type but an inappropriate value.
  */
 export class ValueDateTimeError extends DateTimeError {
-    /**
-     * @param {string} parameterName Parameter name of the function
-     * @param {*} parameterValue Passed value of the parameter
-     * @param {string} message Message
-     */
-    constructor(parameterName, parameterValue, message) {
+    constructor(message='Value error.') {
         super(message);
-        this.parameterName = parameterName;
-        this.parameterValue = parameterValue;
     }
 }

@@ -221,7 +221,10 @@ export class TimeDelta {
         days += div
 
         if(days >= 1000000000 || days <= -1000000000)
-            throw new ValueDateTimeError();
+            throw new ValueDateTimeError(
+                'Cannot handle duration greater than "TimeDelta.max" or ' +
+                'lesser than "TimeDelta.min".'
+            );
 
         this._days = days
         this._seconds = seconds
@@ -313,15 +316,13 @@ export class Date {
     constructor(year, month, day) {
         if(year < MINYEAR || year > MAXYEAR)
             throw new ValueDateTimeError(
-                'year', year, '"year" should be between "MINYEAR" and "MAXYEAR"')
+                '"year" must be between "MINYEAR" and "MAXYEAR".')
         if(month < 1 || month > 12)
-            throw new ValueDateTimeError(
-                'month', month, '"month" should be between 1 and 12')
+            throw new ValueDateTimeError('"month" must be between 1 and 12.')
         if(day < 1 || day > (
                 isLeapYear(year) ?
                 leapedDaysPerMonth[month - 1] : daysPerMonth[month - 1]))
-            throw new ValueDateTimeError(
-                'day', day, 'Invalid day for the year and month')
+            throw new ValueDateTimeError('Invalid day for the year and month.')
 
         this._year = year
         this._month = month
@@ -407,8 +408,7 @@ export class Date {
     static fromISOFormat(dateString) {
         const match = /^(\d\d\d\d)-(\d\d)-(\d\d)$/.exec(dateString);
         if(match == null)
-            throw new ValueDateTimeError('dateString', dateString,
-                                         'invalid format');
+            throw new ValueDateTimeError('Invalid format.');
         const [year, month, day] = match.slice(1).map(Number);
         return new Date(year, month, day);
     }
@@ -574,12 +574,14 @@ export class TZInfo {
      */
     fromUTC(dt) {
         if(dt.tzInfo !== this) {
-            throw new ValueDateTimeError('dt', dt)
+            throw new ValueDateTimeError(
+                '"dt.tzInfo" must be same instance as "this".')
         }
         let dtoff = dt.utcOffset()
         let dtdst = dt.dst()
         if(dtoff == null || dtdst == null) {
-            throw new ValueDateTimeError('dt', dt)
+            throw new ValueDateTimeError(
+                '"dt.utcOffset()" and "dt.dst()" must not return null.')
         }
         const delta = sub(dtoff, dtdst)
         if(cmp(delta, new TimeDelta()) !== 0) {
@@ -620,7 +622,6 @@ export class TimeZone extends TZInfo {
         if(!(cmp(new TimeDelta({hours: -24}), offset) < 0 &&
            cmp(offset, new TimeDelta({hours: 24})) < 0))
             throw new ValueDateTimeError(
-                'offset', offset,
                 '"offset" must be "TimeDelta({hours: -24}) < offset < ' +
                 'TimeDelta({hours: 24})".')
 
@@ -673,7 +674,7 @@ export class TimeZone extends TZInfo {
     fromUTC(dt) {
         if(dt.tzInfo !== this) {
             throw new ValueDateTimeError(
-                'dt', dt, '"dt.tzInfo" must be same instance as "this".')
+                '"dt.tzInfo" must be same instance as "this".')
         }
         return add(dt, this._offset)
     }
@@ -717,7 +718,7 @@ export const LOCALTZINFO = new (class extends TZInfo {
     fromUTC(dt) {
         if(dt.tzInfo !== this)
             throw new ValueDateTimeError(
-                'dt', dt, '"dt.tzInfo" must be same instance as "this".')
+                '"dt.tzInfo" must be same instance as "this".')
 
         const local = DateTime.fromStdDate(dt.toStdDate(true), false).replace({
             microsecond: dt.microsecond, tzInfo: this, fold: 0})
@@ -744,19 +745,19 @@ export class Time {
     constructor(hour=0, minute=0, second=0, microsecond=0, tzInfo=null, fold=0) {
         if(hour < 0 || hour >= 24)
             throw new ValueDateTimeError(
-                'hour', hour, '"hour" should be between 0 and 23.')
+                '"hour" must be between 0 and 23.')
         if(minute < 0 || minute >= 60)
             throw new ValueDateTimeError(
-                'minute', minute, '"minute" should be between 0 and 59.')
+                '"minute" must be between 0 and 59.')
         if(second < 0 || second >= 60)
             throw new ValueDateTimeError(
-                'second', second, '"second" should be between 0 and 59.')
+                '"second" must be between 0 and 59.')
         if(microsecond < 0 || microsecond >= 1000000)
             throw new ValueDateTimeError(
-                'microsecond', microsecond, '"microsecond" should be between 0 and 999999.')
+                '"microsecond" must be between 0 and 999999.')
         if(fold !== 0 && fold !== 1)
             throw new ValueDateTimeError(
-                'fold', fold, '"fold" should be 0 or 1.')
+                '"fold" must be 0 or 1.')
         this._hour = hour
         this._minute = minute
         this._second = second
@@ -827,14 +828,14 @@ export class Time {
         const timeArray = parseTimeString(timeStr)
         if(timeArray == null)
             throw new ValueDateTimeError(
-                'timeString', timeString, 'invalid format')
+                'Invalid format.')
 
         let tzInfo = null
         if(offsetStr !== '') {
             const offsetArray = parseTimeString(offsetStr)
             if(offsetArray == null) {
                 throw new ValueDateTimeError(
-                    'timeString', timeString, 'invalid format')
+                    'Invalid format.')
             }
             let offset = new TimeDelta({
                 hours: offsetArray[0],
@@ -904,9 +905,8 @@ export class Time {
             break
             default:
             throw new ValueDateTimeError(
-                'timeSpec', timeSpec,
-                '"timeSpec" should be either "auto", "microseconds", "milliseconds", ' +
-                '"seconds", "minutes" or "hours"')
+                '"timeSpec" must be either "auto", "microseconds", "milliseconds", ' +
+                '"seconds", "minutes" or "hours".')
         }
 
         const offset = this.utcOffset()
@@ -997,19 +997,19 @@ export class DateTime extends Date {
         super(year, month, day)
         if(hour < 0 || hour >= 24)
             throw new ValueDateTimeError(
-                'hour', hour, '"hour" should be between 0 and 23.')
+                '"hour" must be between 0 and 23.')
         if(minute < 0 || minute >= 60)
             throw new ValueDateTimeError(
-                'minute', minute, '"minute" should be between 0 and 59.')
+                '"minute" must be between 0 and 59.')
         if(second < 0 || second >= 60)
             throw new ValueDateTimeError(
-                'second', second, '"second" should be between 0 and 59.')
+                '"second" must be between 0 and 59.')
         if(microsecond < 0 || microsecond >= 1000000)
             throw new ValueDateTimeError(
-                'microsecond', microsecond, '"microsecond" should be between 0 and 999999.')
+                '"microsecond" must be between 0 and 999999.')
         if(fold !== 0 && fold !== 1)
             throw new ValueDateTimeError(
-                'fold', fold, '"fold" should be 0 or 1.')
+                '"fold" must be 0 or 1.')
         this._hour = hour
         this._minute = minute
         this._second = second
