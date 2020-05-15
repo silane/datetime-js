@@ -1,10 +1,10 @@
 import {
     DateTimeError, NotImplementedDateTimeError, TypeDateTimeError,
-    ValueDateTimeError, RangeDateTimeError,
+    ValueDateTimeError,
 } from './errors.js';
 export {
     DateTimeError, NotImplementedDateTimeError, TypeDateTimeError,
-    ValueDateTimeError, RangeDateTimeError,
+    ValueDateTimeError,
 };
 
 
@@ -221,7 +221,7 @@ export class TimeDelta {
         days += div
 
         if(days >= 1000000000 || days <= -1000000000)
-            throw new RangeDateTimeError();
+            throw new ValueDateTimeError();
 
         this._days = days
         this._seconds = seconds
@@ -312,15 +312,15 @@ export class Date {
      */
     constructor(year, month, day) {
         if(year < MINYEAR || year > MAXYEAR)
-            throw new RangeDateTimeError(
+            throw new ValueDateTimeError(
                 'year', year, '"year" should be between "MINYEAR" and "MAXYEAR"')
         if(month < 1 || month > 12)
-            throw new RangeDateTimeError(
+            throw new ValueDateTimeError(
                 'month', month, '"month" should be between 1 and 12')
         if(day < 1 || day > (
                 isLeapYear(year) ?
                 leapedDaysPerMonth[month - 1] : daysPerMonth[month - 1]))
-            throw new RangeDateTimeError(
+            throw new ValueDateTimeError(
                 'day', day, 'Invalid day for the year and month')
 
         this._year = year
@@ -619,7 +619,7 @@ export class TimeZone extends TZInfo {
         super()
         if(!(cmp(new TimeDelta({hours: -24}), offset) < 0 &&
            cmp(offset, new TimeDelta({hours: 24})) < 0))
-            throw new RangeDateTimeError(
+            throw new ValueDateTimeError(
                 'offset', offset,
                 '"offset" must be "TimeDelta({hours: -24}) < offset < ' +
                 'TimeDelta({hours: 24})".')
@@ -743,19 +743,19 @@ export class Time {
      */
     constructor(hour=0, minute=0, second=0, microsecond=0, tzInfo=null, fold=0) {
         if(hour < 0 || hour >= 24)
-            throw new RangeDateTimeError(
+            throw new ValueDateTimeError(
                 'hour', hour, '"hour" should be between 0 and 23.')
         if(minute < 0 || minute >= 60)
-            throw new RangeDateTimeError(
+            throw new ValueDateTimeError(
                 'minute', minute, '"minute" should be between 0 and 59.')
         if(second < 0 || second >= 60)
-            throw new RangeDateTimeError(
+            throw new ValueDateTimeError(
                 'second', second, '"second" should be between 0 and 59.')
         if(microsecond < 0 || microsecond >= 1000000)
-            throw new RangeDateTimeError(
+            throw new ValueDateTimeError(
                 'microsecond', microsecond, '"microsecond" should be between 0 and 999999.')
         if(fold !== 0 && fold !== 1)
-            throw new RangeDateTimeError(
+            throw new ValueDateTimeError(
                 'fold', fold, '"fold" should be 0 or 1.')
         this._hour = hour
         this._minute = minute
@@ -996,19 +996,19 @@ export class DateTime extends Date {
                 tzInfo=null, fold=0) {
         super(year, month, day)
         if(hour < 0 || hour >= 24)
-            throw new RangeDateTimeError(
+            throw new ValueDateTimeError(
                 'hour', hour, '"hour" should be between 0 and 23.')
         if(minute < 0 || minute >= 60)
-            throw new RangeDateTimeError(
+            throw new ValueDateTimeError(
                 'minute', minute, '"minute" should be between 0 and 59.')
         if(second < 0 || second >= 60)
-            throw new RangeDateTimeError(
+            throw new ValueDateTimeError(
                 'second', second, '"second" should be between 0 and 59.')
         if(microsecond < 0 || microsecond >= 1000000)
-            throw new RangeDateTimeError(
+            throw new ValueDateTimeError(
                 'microsecond', microsecond, '"microsecond" should be between 0 and 999999.')
         if(fold !== 0 && fold !== 1)
-            throw new RangeDateTimeError(
+            throw new ValueDateTimeError(
                 'fold', fold, '"fold" should be 0 or 1.')
         this._hour = hour
         this._minute = minute

@@ -50,5 +50,3 @@ export class ValueDateTimeError extends DateTimeError {
         this.parameterValue = parameterValue;
     }
 }
-export class RangeDateTimeError extends ValueDateTimeError {
-}
