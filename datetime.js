@@ -1340,6 +1340,16 @@ DateTime.max = new DateTime(MAXYEAR, 12, 31, 23, 59, 59, 999999);
 DateTime.resolution = new TimeDelta({microseconds: 1});
 
 
+function typeName(obj) {
+    if(obj === null) {
+        return 'null';
+    } else if(obj === undefined) {
+        return 'undefined';
+    } else {
+        return obj.constructor.name;
+    }
+}
+
 export function add(a, b) {
     function date_plus_timedelta(d, td) {
         d = d.toStdDate()
@@ -1377,7 +1387,8 @@ export function add(a, b) {
     if(a instanceof TimeDelta && b instanceof Date) {
         return date_plus_timedelta(b, a)
     }
-    throw new TypeDateTimeError('Cannot add these two types.')
+    throw new TypeDateTimeError(
+        `Cannot add type "${typeName(a)}" and type "${typeName(b)}".`)
 }
 
 
@@ -1406,7 +1417,7 @@ export function sub(a, b) {
            a.tzInfo !== b.tzInfo) {
             if(aOffset == null || bOffset == null)
                 throw new TypeDateTimeError(
-                    'Cannot subtract naive "DateTime" and aware "DateTime"')
+                    'Cannot subtract between naive "DateTime" and aware "DateTime"')
             a = sub(a, aOffset)
             b = sub(b, bOffset)
         }
@@ -1424,7 +1435,8 @@ export function sub(a, b) {
     if(a instanceof Date && b instanceof Date) {
         return new TimeDelta({days: a.toOrdinal() - b.toOrdinal()})
     }
-    throw new TypeDateTimeError('Cannnot subtract these two types.')
+    throw new TypeDateTimeError(
+        `Cannnot subtract type "${typeName(b)}" from type "${typeName(a)}".`)
 }
 
 
@@ -1436,7 +1448,7 @@ export function neg(a) {
             microseconds: -a.microseconds,
         })
     }
-    throw new TypeDateTimeError('Cannot negate this type.')
+    throw new TypeDateTimeError(`Cannot negate type "${typeName(a)}".`)
 }
 
 
@@ -1529,5 +1541,6 @@ export function cmp(a, b) {
         c = _comp(a.fold, b.fold)
         return c
     }
-    throw new TypeDateTimeError('Cannot compare these two types.')
+    throw new TypeDateTimeError(
+        `Cannot compare type "${typeName(a)}" to type "${typeName(b)}".`)
 }
