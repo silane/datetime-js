@@ -1544,3 +1544,9 @@ export function cmp(a, b) {
     throw new TypeDateTimeError(
         `Cannot compare type "${typeName(a)}" to type "${typeName(b)}".`)
 }
+
+
+export {
+    dtexpr, DtexprDateTimeError, SyntaxDtexprDateTimeError,
+    ExecutionDtexprDateTimeError,
+} from './expression.js';

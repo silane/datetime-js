@@ -1,7 +1,8 @@
 import diff from 'jest-diff';
 import {
-    MAXYEAR, MINYEAR, TimeDelta, Date, TimeZone, Time, DateTime,
-    neg, cmp, add, sub, ValueDateTimeError, RangeDateTimeError, LOCALTZINFO,
+    MAXYEAR, MINYEAR, TimeDelta, Date, TimeZone, Time, DateTime, LOCALTZINFO,
+    neg, cmp, add, sub, dtexpr, ValueDateTimeError, RangeDateTimeError,
+    SyntaxDtexprDateTimeError, ExecutionDtexprDateTimeError,
 } from './datetime.js';
 
 
@@ -1164,5 +1165,61 @@ describe('cmp', () => {
         const aware = new Time(0, 0, 0, 0, new TimeZone(new TimeDelta({})));
         expect(() => cmp(naive, aware)).toThrow();
         expect(() => cmp(aware, naive)).toThrow();
+    });
+});
+
+describe('dtexpr', () => {
+    function proxy(strings, ...values) {
+        return {strings, values, toString() {
+            let ret = strings[0];
+            values.forEach((value, index) => {
+                ret += '${' + value.toString() + '}';
+                ret += strings[index + 1];
+            });
+            return ret;
+        }};
+    }
+    const td1 = new TimeDelta({hours: -1, minutes: 2});
+    const td2 = new TimeDelta({minutes: 4});
+    const td3 = new TimeDelta({days: 3});
+    const dt1 = new DateTime(2003, 4, 25, 18, 10, 0, 0,
+                             new TimeZone(new TimeDelta({hours: 11})));
+    const dt2 = new DateTime(2003, 4, 25, 5, 0, 0, 0,
+                             new TimeZone(new TimeDelta({hours: -3})));
+    const date1 = new Date(389, 11, 3);
+    const date2 = new Date(389, 10, 31);
+    const time1 = new Time(21, 12);
+    
+    test.each([
+        [proxy`${td1} + ${td2}`, new TimeDelta({hours: -1, minutes: 6})],
+        [proxy`${td1} + ${dt1}`, new DateTime(
+            2003, 4, 25, 17, 12, 0, 0, new TimeZone(new TimeDelta({hours: 11}))
+         )],
+        [proxy`${td2} > ${td1}`, true],
+        [proxy`-${td1} + ${dt2} <= ${dt1}`, false],
+        [proxy`-(${td1} - ${td2})`, new TimeDelta({hours: 1, minutes: 2})],
+        [proxy`(-${td1} - ${td2}) + ${dt1} == ${dt2} + ${td2}`, true],
+        [proxy`${date2} - ${td3}`, new Date(389, 10, 28)],
+        [proxy`${date1} >= ${date2} + ${td3}`, true],
+        [proxy`${time1} != ${time1}`, false],
+    ])('dtexpr %s to be %p', (templateLitral, expected) => {
+        const received = dtexpr(templateLitral.strings,
+                                ...templateLitral.values);
+        if(typeof received === 'object' && typeof received === 'object') {
+            expect(received).toBeEqualDateTime(expected);
+        } else {
+            expect(received).toBe(expected);
+        }
+    });
+
+    test('throws SyntaxDtexprDateTimeError on invalid expression', () => {
+        expect(() => dtexpr`abcd`).toThrow(SyntaxDtexprDateTimeError);
+    });
+
+    test('throws ExecutionDtexprDateTimeError on not supported operation',
+         () => {
+        expect(
+            () => dtexpr`${new Time()} == ${new Date(1, 1, 1)}`
+        ).toThrow(ExecutionDtexprDateTimeError);
     });
 });
