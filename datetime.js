@@ -438,10 +438,7 @@ export class Date {
      * @param {number} [newValues.day]
      * @returns {Date}
      */
-    replace({year, month, day}) {
-        if(year === undefined) year = this.year;
-        if(month === undefined) month = this.month;
-        if(day === undefined) day = this.day;
+    replace({ year=this.year, month=this.month, day=this.day }) {
         return new Date(year, month, day);
     }
     /**
@@ -854,7 +851,7 @@ export class Time {
     /**
      * Return a time with the same value, except for those attributes given new
      * values by whichever keyword arguments are specified. Note that
-     * {tzinfo: None} can be specified to create a naive time from an aware
+     * {tzinfo: null} can be specified to create a naive time from an aware
      * time, without conversion of the time data.
      * @param {Object} newValues The object consisting of new values.
      * @param {number} [newValues.hour]
@@ -865,14 +862,9 @@ export class Time {
      * @param {number} [newValues.fold]
      * @returns {Time}
      */
-    replace({hour, minute, second, microsecond, tzInfo, fold}) {
-        // we have to distinguish null and undefined because tzInfo may be null
-        if(hour === undefined) hour = this.hour
-        if(minute === undefined) minute = this.minute
-        if(second === undefined) second = this.second
-        if(microsecond === undefined) microsecond = this.microsecond
-        if(tzInfo === undefined) tzInfo = this.tzInfo
-        if(fold === undefined) fold = this.fold
+    replace({ hour=this.hour, minute=this.minute, second=this.second,
+              microsecond=this.microsecond, tzInfo=this.tzInfo,
+              fold=this.fold }) {
         return new Time(hour, minute, second, microsecond, tzInfo, fold)
     }
     /**
@@ -1215,16 +1207,12 @@ export class DateTime extends Date {
      * @param {number} [newValues.fold]
      * @returns {DateTime}
      */
-    replace({year, month, day, hour, minute, second, microsecond, tzInfo, fold}) {
-        const newDate = super.replace({year, month, day})
-        // we have to distinguish null and undefined becase tzInfo may be null
-        if(hour === undefined) hour = this.hour
-        if(minute === undefined) minute = this.minute
-        if(second === undefined) second = this.second
-        if(microsecond === undefined) microsecond = this.microsecond
-        if(tzInfo === undefined) tzInfo = this.tzInfo
-        if(fold === undefined) fold = this.fold
-        return new DateTime(newDate.year, newDate.month, newDate.day,
+    replace({
+        year=this.year, month=this.month, day=this.day, hour=this.hour,
+        minute=this.minute, second=this.second, microsecond=this.microsecond,
+        tzInfo=this.tzInfo, fold=this.fold,
+    }) {
+        return new DateTime(year, month, day,
                             hour, minute, second, microsecond, tzInfo, fold)
     }
     /**
