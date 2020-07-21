@@ -3,7 +3,7 @@ import {
     MAXYEAR, MINYEAR, TimeDelta, Date, TimeZone, Time, DateTime, LOCALTZINFO,
     neg, cmp, add, sub, dtexpr, ValueDateTimeError, RangeDateTimeError,
     SyntaxDtexprDateTimeError, ExecutionDtexprDateTimeError,
-} from './datetime.js';
+} from './src/datetime.js';
 
 
 const StdDate = Function('return this')().Date;

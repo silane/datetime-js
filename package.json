@@ -2,13 +2,14 @@
   "name": "datetime",
   "version": "0.1.0",
   "description": "Date and time library similar to Python's \"datetime\" package.",
-  "module": "datetime.js",
+  "module": "lib/esm/datetime.js",
+  "main": "lib/cjs/datetime.js",
   "type": "module",
   "scripts": {
     "test": "jest",
     "build": "npm run build:esm && npm run build:cjs && npm run build:browser",
-    "build:esm": "babel --env-name node-esm -o lib/datetime.esm.js datetime.js",
-    "build:cjs": "babel --env-name node-cjs -o lib/datetime.cjs.js datetime.js",
+    "build:esm": "babel src --env-name node-esm --out-dir lib/esm",
+    "build:cjs": "babel src --env-name node-cjs --out-dir lib/cjs",
     "build:browser": "rollup -c"
   },
   "repository": {
