@@ -13,18 +13,5 @@ module.exports = {
         ],
       ],
     },
-    'node-esm': {
-      presets: [
-        [
-          '@babel/env',
-          {
-            targets: 'maintained node versions',
-            modules: false,
-            useBuiltIns: 'usage',
-            corejs:3,
-          },
-        ],
-      ],
-    },
   },
 };
