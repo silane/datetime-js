@@ -2,8 +2,8 @@
   "name": "datetime",
   "version": "0.1.0",
   "description": "Date and time library similar to Python's \"datetime\" package.",
-  "module": "src/datetime.js",
-  "main": "lib/datetime.js",
+  "module": "src/index.js",
+  "main": "lib/index.js",
   "type": "module",
   "scripts": {
     "test": "jest",

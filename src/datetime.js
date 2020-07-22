@@ -1,11 +1,6 @@
 import {
-    DateTimeError, NotImplementedDateTimeError, TypeDateTimeError,
-    ValueDateTimeError,
+    NotImplementedDateTimeError, TypeDateTimeError, ValueDateTimeError,
 } from './errors.js';
-export {
-    DateTimeError, NotImplementedDateTimeError, TypeDateTimeError,
-    ValueDateTimeError,
-};
 
 
 /**
@@ -1557,9 +1552,3 @@ export function cmp(a, b) {
     throw new TypeDateTimeError(
         `Cannot compare type "${typeName(a)}" to type "${typeName(b)}".`)
 }
-
-
-export {
-    dtexpr, DtexprDateTimeError, SyntaxDtexprDateTimeError,
-    ExecutionDtexprDateTimeError,
-} from './expression.js';
