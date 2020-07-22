@@ -347,7 +347,7 @@ export class Date {
     /**
      * Return the Date corresponding to the given standard library Date object.
      * @param {stdDate} d The standard library Date object.
-     * @param {boolean} utc If true, use getUTC\*\*\*() instead of get\*\*\*()
+     * @param {boolean} utc If true, use getUTC***() instead of get***()
      *                      to construct Date.
      * @returns {Date}
      */
@@ -414,8 +414,8 @@ export class Date {
     }
     /**
      * Return a standard library Date object corresponding to this Date.
-     * @param {boolean} utc If true, the value of getUTC\*\*\*(), instead of
-     *                      get\*\*\*(), will correspond to this Date.
+     * @param {boolean} utc If true, the value of getUTC***(), instead of
+     *                      get***(), will correspond to this Date.
      * @returns {stdDate}
      */
     toStdDate(utc=false) {
@@ -1047,7 +1047,7 @@ export class DateTime extends Date {
     /**
      * Return a DateTime corresponding to the given standard library Date object.
      * @param {stdDate} d The standard library Date object.
-     * @param {boolean} utc If true, use getUTC\*\*\*() instead of get\*\*\*()
+     * @param {boolean} utc If true, use getUTC***() instead of get***()
      *                      to construct DateTime.
      * @returns {DateTime}
      */
@@ -1146,8 +1146,8 @@ export class DateTime extends Date {
      * Return a standard library Date object corresponding to this DateTime.
      * Since standard library Date object has only millisecond resolution, the
      * microsecond value is truncated.
-     * @param {boolean} utc If true, the value of getUTC\*\*\*(), instead of
-     *                      get\*\*\*(), will correspond to this Date.
+     * @param {boolean} utc If true, the value of getUTC***(), instead of
+     *                      get***(), will correspond to this Date.
      * @returns {stdDate}
      */
     toStdDate(utc=false) {
@@ -1338,6 +1338,12 @@ function typeName(obj) {
     }
 }
 
+/**
+ * Add two datetime objects.
+ * @param {(TimeDelta|DateTime|Date)} a Left side value.
+ * @param {(TimeDelta|DateTime|Date)} b Right side value.
+ * @returns {(TimeDelta|DateTime|Date)}
+ */
 export function add(a, b) {
     function date_plus_timedelta(d, td) {
         d = d.toStdDate()
@@ -1380,6 +1386,12 @@ export function add(a, b) {
 }
 
 
+/**
+ * Subtract two datetime objects.
+ * @param {(TimeDelta|DateTime|Date)} a Left side value.
+ * @param {(TimeDelta|DateTime|Date)} b Right side value.
+ * @returns {(TimeDelta|DateTime|Date)}
+ */
 export function sub(a, b) {
     if(a instanceof TimeDelta && b instanceof TimeDelta) {
         return new TimeDelta({
@@ -1428,6 +1440,11 @@ export function sub(a, b) {
 }
 
 
+/**
+ * Negate datetime objects.
+ * @param {TimeDelta} a The value.
+ * @returns {TimeDelta}
+ */
 export function neg(a) {
     if(a instanceof TimeDelta) {
         return new TimeDelta({
@@ -1440,6 +1457,14 @@ export function neg(a) {
 }
 
 
+/**
+ * Compare two datetime objects.
+ * Return 0 if two are the same, 1 if left side is greater than right,
+ * -1 if right side is greater than left.
+ * @param {(TimeDelta|DateTime|Date|Time)} a Left side value.
+ * @param {(TimeDelta|DateTime|Date|Time)} b Right side value.
+ * @returns {number}
+ */
 export function cmp(a, b) {
     function _comp(a, b) {
         if(a === b) return 0

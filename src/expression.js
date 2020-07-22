@@ -4,6 +4,9 @@ import {
 import { DateTimeError, NotImplementedDateTimeError } from './errors.js';
 
 
+/**
+ * Base exception of other exceptions raised in dtexpr.
+ */
 export class DtexprDateTimeError extends DateTimeError {
     constructor(expression, pos, message) {
         super(message);
@@ -22,8 +25,15 @@ ${expressionStr}
 ${' '.repeat(pos)}^`;
     }
 }
+/**
+ * Raised when there is a syntax error in dtexpr.
+ */
 export class SyntaxDtexprDateTimeError extends DtexprDateTimeError {
 }
+/**
+ * Raised when there occur an error in execution phase in dtexpr, such as
+ * inappropriate type passed to an operator.
+ */
 export class ExecutionDtexprDateTimeError extends DtexprDateTimeError {
     constructor(expression, pos, originalError, message) {
         super(expression, pos, message);
@@ -178,7 +188,7 @@ class SubNode extends CommonBinaryNode {
 
 class ParsingStr {
     /**
-     * @param {(string|number|TimeDelta|Date|Time|DateTime)[]} s 
+     * @param {((string|number|TimeDelta|Date|Time|DateTime)[])} s
      */
     constructor(s) {
         this.s = s;
@@ -354,6 +364,11 @@ function realexpr(s) {
 }
 
 
+/**
+ * Tagged template function to perform operations on datetime objects.
+ * @param {string[]} strings Strings to be passed by tagged template.
+ * @param  {...any} values Values to be passed by tagged template.
+ */
 export function dtexpr(strings, ...values) {
     let list = [strings[0]];
     values.forEach((value, i) => {
