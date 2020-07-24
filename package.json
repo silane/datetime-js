@@ -15,7 +15,27 @@
     "type": "git",
     "url": "https://github.com/silane/datetime-js.git"
   },
+  "keywords": [
+    "datetime",
+    "date",
+    "time",
+    "timedelta",
+    "duration",
+    "timezone"
+  ],
   "author": "silane",
+  "files": [
+    "package.json",
+    "README.md",
+    "LICENSE",
+    "datetime.test.js",
+    "jest.config.cjs",
+    "babel.config.cjs",
+    "rollup.config.js",
+    "src/*",
+    "lib/*",
+    "umd/*"
+  ],
   "license": "Apache-2.0",
   "devDependencies": {
     "@babel/cli": "^7.8.4",
