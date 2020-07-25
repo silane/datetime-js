@@ -2,13 +2,13 @@
   "name": "@silane/datetime",
   "version": "0.1.0",
   "description": "Date and time library similar to Python's \"datetime\" package.",
-  "module": "src/index.js",
-  "main": "lib/index.js",
   "type": "module",
+  "module": "./src/index.js",
+  "main": "./lib/index.cjs",
   "scripts": {
     "test": "jest",
     "build": "npm run build:cjs && npm run build:browser",
-    "build:cjs": "babel src --env-name node-cjs --out-dir lib",
+    "build:cjs": "babel src --env-name node-cjs --out-dir lib --out-file-extension .cjs",
     "build:browser": "rollup -c"
   },
   "repository": {
@@ -44,6 +44,7 @@
     "@rollup/plugin-commonjs": "^11.1.0",
     "@rollup/plugin-node-resolve": "^7.1.3",
     "babel-jest": "^26.0.1",
+    "babel-plugin-replace-import-extension": "^1.0.1",
     "jest": "^26.0.1",
     "rollup": "^2.8.2",
     "rollup-plugin-babel": "^4.4.0"
