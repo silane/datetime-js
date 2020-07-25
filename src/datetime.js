@@ -1,52 +1,37 @@
+import {
+    NotImplementedDateTimeError, TypeDateTimeError, ValueDateTimeError,
+} from './errors.js';
+
+
+/**
+ * The smallest year number allowed in a date or datetime object.
+ */
 export const MINYEAR = 1
+/**
+ * The largest year number allowed in a date or datetime object.
+ */
 export const MAXYEAR = 9999
-
-
-export class DateTimeError extends Error {
-    constructor(message) {
-        super(message);
-        Object.defineProperty(this, 'name', {
-            configurable: true,
-            enumerable: false,
-            value: this.constructor.name,
-            writable: true,
-        });
-        if(Error.captureStackTrace) {
-            Error.captureStackTrace(this, this.constructor);
-        }
-    }
-}
-export class NotImplementedDateTimeError extends DateTimeError {
-    constructor() {
-        super("Not implemented.");
-    }
-}
-export class TypeDateTimeError extends DateTimeError {
-    constructor(parameterName, parameterValue, message) {
-        super(message);
-        this.parameterName = parameterName;
-        this.parameterValue = parameterValue;
-    }
-}
-export class ValueDateTimeError extends DateTimeError {
-    constructor(parameterName, parameterValue, message) {
-        super(message);
-        this.parameterName = parameterName;
-        this.parameterValue = parameterValue;
-    }
-}
-export class RangeDateTimeError extends ValueDateTimeError {
-}
 
 
 const stdDate = Function('return this')().Date;
 
-// "stdDate.UTC" converts years between 0 and 99 to a year in the 20th century.
-// Usually it can be avoided just adding setUTCFullYear(year)
-// after constructing the "stdDate" instance.
-// Buf if the parameters from month to milliseconds are outside of their
-// range, year can be updated to accommodate these values.
-// In this case, below function must be used.
+
+/**
+ * "stdDate.UTC" converts years between 0 and 99 to a year in the 20th century.
+ * Usually it can be avoided just adding setUTCFullYear(year)
+ * after constructing the "stdDate" instance.
+ * Buf if the parameters from month to milliseconds are outside of their
+ * range, year can be updated to accommodate these values.
+ * In this case, this function must be used.
+
+ * @param {number} year
+ * @param {number} month
+ * @param {number} day
+ * @param {number} hour
+ * @param {number} minute
+ * @param {number} second
+ * @param {number} millisecond
+ */
 function safeStdDateUTC(year, month, day, hour, minute, second, millisecond) {
     const d = new stdDate();
     d.setUTCFullYear(year);
@@ -89,15 +74,15 @@ function zeroPad(integer, length) {
 }
 
 
-// "timeDelta" must be "TimeDelta({hours: -24}) < timeDelta < 
+// "timeDelta" must be "TimeDelta({hours: -24}) < timeDelta <
 // TimeDelta({hours: 24})"
 function toOffsetString(timeDelta) {
     let offset = timeDelta
-    const minus = offset.days < 0 
+    const minus = offset.days < 0
     if(minus) {
         offset = neg(offset)
     }
-    
+
     const seconds = offset.seconds % 60
     const totalMinutes = Math.floor(offset.seconds / 60)
     const minutes = zeroPad(totalMinutes % 60, 2)
@@ -189,12 +174,26 @@ function strftime(dt, format) {
     return ret
 }
 
-
+/**
+ * Represents a duration, the difference between two dates or times.
+ * Javascript version of
+ * https://docs.python.org/3/library/datetime.html#datetime.timedelta.
+ */
 export class TimeDelta {
+    /**
+     * @param {Object} duration An object consisting of duration values.
+     * @param {number} duration.days
+     * @param {number} duration.seconds
+     * @param {number} duration.microseconds
+     * @param {number} duration.milliseconds
+     * @param {number} duration.minutes
+     * @param {number} duration.hours
+     * @param {number} duration.weeks
+     */
     constructor({
             days=0, seconds=0, microseconds=0,
             milliseconds=0, minutes=0, hours=0, weeks=0}={}) {
-        
+
         microseconds += milliseconds * 1000
         seconds += minutes * 60
         seconds += hours * 3600
@@ -211,27 +210,50 @@ export class TimeDelta {
         [div, mod] = divmod(microseconds, 1000 ** 2)
         microseconds = mod
         seconds += div;
-        
+
         [div, mod] = divmod(seconds, 3600 * 24)
         seconds = mod
         days += div
 
         if(days >= 1000000000 || days <= -1000000000)
-            throw new RangeDateTimeError();
+            throw new ValueDateTimeError(
+                'Cannot handle duration greater than "TimeDelta.max" or ' +
+                'lesser than "TimeDelta.min".'
+            );
 
         this._days = days
         this._seconds = seconds
         this._microseconds = microseconds
     }
 
+    /**
+     * Between -999999999 and 999999999 inclusive.
+     * @type {number}
+     */
     get days() { return this._days }
+    /**
+     * Between 0 and 86399 inclusive
+     * @type {number}
+     */
     get seconds() { return this._seconds }
+    /**
+     * Between 0 and 999999 inclusive
+     * @type {number}
+     */
     get microseconds() { return this._microseconds }
-    
+
+    /**
+     * Return the total number of seconds contained in the duration.
+     * @returns {number}
+     */
     totalSeconds() {
         return this.days * 3600 * 24 + this.seconds + this.microseconds / (1000 ** 2)
     }
 
+    /**
+     * Return the human-readable string respresentation.
+     * @returns {string}
+     */
     toString() {
         let ret = ''
         if(this.days) {
@@ -246,39 +268,84 @@ export class TimeDelta {
         return ret
     }
 
+    /**
+     * Same as totalSeconds().
+     * @returns {number}
+     */
     valueOf() {
         return this.totalSeconds()
     }
 }
+/**
+ * The most negative timedelta object, new TimeDelta({days: -999999999}).
+ * @type {TimeDelta}
+ */
 TimeDelta.min = new TimeDelta({days: -999999999});
+/**
+ * The most positive timedelta object, new TimeDelta({days: 999999999,
+ * hours: 23, minutes: 59, seconds: 59, microseconds: 999999}).
+ * @type {TimeDelta}
+ */
 TimeDelta.max = new TimeDelta({days: 999999999, hours: 23, minutes: 59,
                                seconds: 59, microseconds: 999999});
+/**
+ * The smallest possible difference between non-equal timedelta objects,
+ * new TimeDelta({microseconds: 1}).
+ * @type {TimeDelta}
+*/
 TimeDelta.resolution = new TimeDelta({microseconds: 1});
 
 
+/**
+ * Represents a date (year, month and day) in an idealized calendar.
+ * Javascript version of
+ * https://docs.python.org/3/library/datetime.html#datetime.date.
+ */
 export class Date {
+    /**
+     * @param {number} year Between MINYEAR and MAXYEAR.
+     * @param {number} month Between 1 and 12.
+     * @param {number} day Between 1 and the number of days in the given month
+     *                     and year.
+     */
     constructor(year, month, day) {
         if(year < MINYEAR || year > MAXYEAR)
-            throw new RangeDateTimeError(
-                'year', year, '"year" should be between "MINYEAR" and "MAXYEAR"')
+            throw new ValueDateTimeError(
+                '"year" must be between "MINYEAR" and "MAXYEAR".')
         if(month < 1 || month > 12)
-            throw new RangeDateTimeError(
-                'month', month, '"month" should be between 1 and 12')
+            throw new ValueDateTimeError('"month" must be between 1 and 12.')
         if(day < 1 || day > (
                 isLeapYear(year) ?
                 leapedDaysPerMonth[month - 1] : daysPerMonth[month - 1]))
-            throw new RangeDateTimeError(
-                'day', day, 'Invalid day for the year and month')
+            throw new ValueDateTimeError('Invalid day for the year and month.')
 
         this._year = year
         this._month = month
         this._day = day
     }
 
+    /**
+     * Between MINYEAR and MAXYEAR.
+     * @type {number}
+     */
     get year() { return this._year }
+    /**
+     * Between 1 and 12.
+     * @type {number}
+     */
     get month() { return this._month }
+    /**
+     * Between 1 and the number of days in the given month and year.
+     * @type {number}
+     */
     get day() { return this._day }
-
+    /**
+     * Return the Date corresponding to the given standard library Date object.
+     * @param {stdDate} d The standard library Date object.
+     * @param {boolean} utc If true, use getUTC***() instead of get***()
+     *                      to construct Date.
+     * @returns {Date}
+     */
     static fromStdDate(d, utc=false) {
         if(!utc)
             return new Date(
@@ -287,12 +354,20 @@ export class Date {
             return new Date(
                 d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate())
     }
-
+    /**
+     * Return the current local date.
+     * @returns {Date}
+     */
     static today() {
         const today = new stdDate()
         return Date.fromStdDate(today)
     }
-
+    /**
+     * Return the Date corresponding to the proleptic Gregorian ordinal, where
+     * January 1 of year 1 has ordinal 1.
+     * @param {number} ordinal The proleptic Gregorian ordinal.
+     * @returns {Date}
+     */
     static fromOrdinal(ordinal) {
         let q, r;
         let year = 1 ,month = 1, day = 1;
@@ -319,16 +394,25 @@ export class Date {
         }
         return new Date(year, month, day);
     }
-
+    /**
+     * Return a Date corresponding to a dateString given in the format
+     * YYYY-MM-DD.
+     * @param {string} dateString The date string.
+     * @returns {Date}
+     */
     static fromISOFormat(dateString) {
         const match = /^(\d\d\d\d)-(\d\d)-(\d\d)$/.exec(dateString);
         if(match == null)
-            throw new ValueDateTimeError('dateString', dateString,
-                                         'invalid format');
+            throw new ValueDateTimeError('Invalid format.');
         const [year, month, day] = match.slice(1).map(Number);
         return new Date(year, month, day);
     }
-
+    /**
+     * Return a standard library Date object corresponding to this Date.
+     * @param {boolean} utc If true, the value of getUTC***(), instead of
+     *                      get***(), will correspond to this Date.
+     * @returns {stdDate}
+     */
     toStdDate(utc=false) {
         let ret;
         if(!utc) {
@@ -340,14 +424,24 @@ export class Date {
         }
         return ret;
     }
-
-    replace({year, month, day}) {
-        if(year === undefined) year = this.year;
-        if(month === undefined) month = this.month;
-        if(day === undefined) day = this.day;
+    /**
+     * Return a Date with the same value, except for those parameters given new
+     * values by whichever keyword arguments are specified.
+     * @param {Object} newValues The object consisting of new values.
+     * @param {number} [newValues.year]
+     * @param {number} [newValues.month]
+     * @param {number} [newValues.day]
+     * @returns {Date}
+     */
+    replace({ year=this.year, month=this.month, day=this.day }) {
         return new Date(year, month, day);
     }
-
+    /**
+     * Return the proleptic Gregorian ordinal of the Date,
+     * where January 1 of year 1 has ordinal 1.
+     * For any Date object d, Date.fromordinal(d.toordinal()) == d.
+     * @returns {number}
+     */
     toOrdinal() {
         let totalDays = 0
 
@@ -361,59 +455,125 @@ export class Date {
         } else {
             totalDays += totalDaysPerMonth[this.month - 1]
         }
-        
+
         totalDays += this.day
 
         return totalDays
     }
-
+    /**
+     * Return the day of the week as an integer, where Monday is 0 and Sunday
+     * is 6. For example, date(2002, 12, 4).weekday() == 2, a Wednesday.
+     * @returns {number}
+    */
     weekday() {
         return (this.toStdDate().getDay() + 6) % 7
     }
-
+    /**
+     * Return a string representing the date in ISO 8601 format, YYYY-MM-DD.
+     * @returns {string}
+     */
     isoFormat() {
         return `${zeroPad(this.year, 4)}-${zeroPad(this.month, 2)}-${zeroPad(this.day, 2)}`
     }
-
+    /**
+     * Return a string representing the date, controlled by an explicit format
+     * string. Format codes referring to hours, minutes or seconds will see 0
+     * values.
+     * @param {string} format The format string.
+     * @returns {string}
+     */
     strftime(format) {
         const dt = DateTime.combine(this, new Time());
         return strftime(dt, format);
     }
-
+    /**
+     * Same as isoFormat().
+     * @returns {string}
+     */
     toString() {
         return this.isoFormat()
     }
-
+    /**
+     * Same as toOrdinal().
+     * @returns {number}
+     */
     valueOf() {
         return this.toOrdinal();
     }
 }
+/**
+ * The earliest representable date, new Date(MINYEAR, 1, 1).
+ * @type {Date}
+ */
 Date.min = new Date(MINYEAR, 1, 1);
+/**
+ * The latest representable date, new Date(MAXYEAR, 12, 31).
+ * @type {Date}
+ */
 Date.max = new Date(MAXYEAR, 12, 31);
+/**
+ * The smallest possible difference between non-equal date objects,
+ * new TimeDelta({days: 1}).
+ * @type {TimeDelta}
+ */
 Date.resolution = new TimeDelta({days: 1});
 
 
+/**
+ * This is an abstract base class, meaning that this class should not be
+ * instantiated directly. Define a subclass of tzinfo to capture information
+ * about a particular time zone.
+ * Javascript version of
+ * https://docs.python.org/3/library/datetime.html#datetime.tzinfo.
+ */
 export class TZInfo {
+    /**
+     * Return offset of local time from UTC, as a TimeDelta object that is
+     * positive east of UTC. If local time is west of UTC, this should be
+     * negative.
+     * @param {DateTime} dt The DateTime object.
+     * @returns {TimeDelta}
+     */
     utcOffset(dt) {
         throw new NotImplementedDateTimeError()
     }
-
+    /**
+     * Return the daylight saving time (DST) adjustment, as a TimeDelta object
+     * or None if DST information isn’t known.
+     * @param {DateTime} dt The DateTime object.
+     * @returns {TimeDelta}
+     */
     dst(dt) {
         throw new NotImplementedDateTimeError()
     }
-
+    /**
+     * Return the time zone name corresponding to the datetime object dt, as a
+     * string.
+     * @param {DateTime} dt The DateTime object.
+     * @returns {string}
+     */
     tzName(dt) {
         throw new NotImplementedDateTimeError()
     }
-
+    /**
+     * This is called from the default datetime.astimezone() implementation.
+     * When called from that, dt.tzinfo is self, and dt’s date and time data are
+     * to be viewed as expressing a UTC time. The purpose of fromutc() is to
+     * adjust the date and time data, returning an equivalent datetime in self’s
+     * local time.
+     * @param {DateTime} dt The DateTime object.
+     * @returns {DateTime}
+     */
     fromUTC(dt) {
         if(dt.tzInfo !== this) {
-            throw new ValueDateTimeError('dt', dt)
+            throw new ValueDateTimeError(
+                '"dt.tzInfo" must be same instance as "this".')
         }
         let dtoff = dt.utcOffset()
         let dtdst = dt.dst()
         if(dtoff == null || dtdst == null) {
-            throw new ValueDateTimeError('dt', dt)
+            throw new ValueDateTimeError(
+                '"dt.utcOffset()" and "dt.dst()" must not return null.')
         }
         const delta = sub(dtoff, dtdst)
         if(cmp(delta, new TimeDelta()) !== 0) {
@@ -428,16 +588,35 @@ export class TZInfo {
 }
 
 
+/**
+ * The TimeZone class is a subclass of TZInfo, each instance of which represents
+ * a timezone defined by a fixed offset from UTC.
+ * Objects of this class cannot be used to represent timezone information in the
+ * locations where different offsets are used in different days of the year or
+ * where historical changes have been made to civil time.
+ * Javascript version of
+ * https://docs.python.org/3/library/datetime.html#datetime.timezone.
+ */
 export class TimeZone extends TZInfo {
+    /**
+     *
+     * @param {TimeDelta} offset Represents the difference between the local
+     *                           time and UTC. It must be strictly between
+     *                           -TimeDelta({hours: 24}) and
+     *                           TimeDelta({hours: 24}), otherwise
+     *                           ValueDateTimeError is raised.
+     * @param {string} name If specified, it must be a string that will be used
+     *                      as the value returned by the DateTime.tzname()
+     *                      method.
+     */
     constructor(offset, name=null) {
         super()
         if(!(cmp(new TimeDelta({hours: -24}), offset) < 0 &&
            cmp(offset, new TimeDelta({hours: 24})) < 0))
-            throw new RangeDateTimeError(
-                'offset', offset,
-                '"offset" must be "TimeDelta({hours: -24}) < offset < ' + 
+            throw new ValueDateTimeError(
+                '"offset" must be "TimeDelta({hours: -24}) < offset < ' +
                 'TimeDelta({hours: 24})".')
-        
+
         if(name == null) {
             name = 'UTC'
             if(cmp(offset, new TimeDelta()) != 0 ) {
@@ -447,33 +626,66 @@ export class TimeZone extends TZInfo {
         this._offset = offset
         this._name = name
     }
-
+    /**
+     * Return the fixed value specified when the TimeZone instance is
+     * constructed.
+     * @param {DateTime} dt This argument is ignored.
+     * @returns {TimeDelta}
+     */
     utcOffset(dt) {
         return this._offset
     }
-
+    /**
+     * Return the fixed value specified when the timezone instance is
+     * constructed.
+     * If name is not provided in the constructor, the name returned by
+     * tzName(dt) is generated from the value of the offset as follows.
+     * If offset is TimeDelta({}), the name is “UTC”, otherwise it is a string
+     * in the format UTC±HH:MM, where ± is the sign of offset, HH and MM are two
+     * digits of offset.hours and offset.minutes respectively.
+     * @param {DateTime} dt This argument is ignored.
+     * @returns {string}
+     */
     tzName(dt) {
         return this._name
     }
-
+    /**
+     * Always returns null.
+     * @param {DateTime} dt This argument is ignored.
+     * @returns {null}
+     */
     dst(dt) {
         return null
     }
-
+    /**
+     * Return add(dt, offset). The dt argument must be an aware datetime
+     * instance, with tzInfo set to this.
+     * @param {DateTime} dt The DateTime object.
+     * @returns {DateTime}
+     */
     fromUTC(dt) {
         if(dt.tzInfo !== this) {
             throw new ValueDateTimeError(
-                'dt', dt, '"dt.tzInfo" must be same instance as "this".')
+                '"dt.tzInfo" must be same instance as "this".')
         }
         return add(dt, this._offset)
     }
 }
+/**
+ * The UTC timezone, new TimeZone(new TimeDelta({})).
+ * @type {TimeZone}
+ */
 TimeZone.utc =  new TimeZone(new TimeDelta({}));
 
 
+/**
+ * Instance of a class which is subclass of TZInfo, representing local timezone
+ * of the execution environment.
+ */
 export const LOCALTZINFO = new (class extends TZInfo {
     constructor() {
         super()
+        // Offset without DST
         const stdOffset = -new stdDate(2000, 0, 1).getTimezoneOffset()
         this._stdOffset = new TimeDelta({minutes: stdOffset})
     }
@@ -498,8 +710,8 @@ export const LOCALTZINFO = new (class extends TZInfo {
     fromUTC(dt) {
         if(dt.tzInfo !== this)
             throw new ValueDateTimeError(
-                'dt', dt, '"dt.tzInfo" must be same instance as "this".')
-        
+                '"dt.tzInfo" must be same instance as "this".')
+
         const local = DateTime.fromStdDate(dt.toStdDate(true), false).replace({
             microsecond: dt.microsecond, tzInfo: this, fold: 0})
         return local
@@ -507,23 +719,37 @@ export const LOCALTZINFO = new (class extends TZInfo {
 })()
 
 
+/**
+ * A time object represents a (local) time of day, independent of any particular
+ * day, and subject to adjustment via a tzinfo object.
+ * Javascript version of
+ * https://docs.python.org/3/library/datetime.html#datetime.time.
+ */
 export class Time {
+    /**
+     * @param {number} hour Between 0 and 23.
+     * @param {number} minute Between 0 and 59.
+     * @param {number} second Between 0 and 59.
+     * @param {number} microsecond Between 0 and 999999.
+     * @param {TZInfo} tzInfo The timezone information.
+     * @param {number} fold 0 or 1.
+     */
     constructor(hour=0, minute=0, second=0, microsecond=0, tzInfo=null, fold=0) {
         if(hour < 0 || hour >= 24)
-            throw new RangeDateTimeError(
-                'hour', hour, '"hour" should be between 0 and 23.')
+            throw new ValueDateTimeError(
+                '"hour" must be between 0 and 23.')
         if(minute < 0 || minute >= 60)
-            throw new RangeDateTimeError(
-                'minute', minute, '"minute" should be between 0 and 59.')
+            throw new ValueDateTimeError(
+                '"minute" must be between 0 and 59.')
         if(second < 0 || second >= 60)
-            throw new RangeDateTimeError(
-                'second', second, '"second" should be between 0 and 59.')
+            throw new ValueDateTimeError(
+                '"second" must be between 0 and 59.')
         if(microsecond < 0 || microsecond >= 1000000)
-            throw new RangeDateTimeError(
-                'microsecond', microsecond, '"microsecond" should be between 0 and 999999.')
+            throw new ValueDateTimeError(
+                '"microsecond" must be between 0 and 999999.')
         if(fold !== 0 && fold !== 1)
-            throw new RangeDateTimeError(
-                'fold', fold, '"fold" should be 0 or 1.')
+            throw new ValueDateTimeError(
+                '"fold" must be 0 or 1.')
         this._hour = hour
         this._minute = minute
         this._second = second
@@ -531,14 +757,48 @@ export class Time {
         this._tzInfo = tzInfo
         this._fold = fold
     }
-
+    /**
+     * Between 0 and 23.
+     * @type {number}
+     */
     get hour() { return this._hour }
+    /**
+     * Between 0 and 59.
+     * @type {number}
+     */
     get minute() { return this._minute }
+    /**
+     * Between 0 and 59.
+     * @type {number}
+     */
     get second() { return this._second }
+    /**
+     * Between 0 and 999999.
+     * @type {number}
+     */
     get microsecond() { return this._microsecond }
+    /**
+     * The object passed as the tzInfo argument to the Time constructor, or null
+     * if none was passed.
+     * @type {TZInfo}
+     */
     get tzInfo() { return this._tzInfo }
+    /**
+     * 0 or 1. Used to disambiguate wall times during a repeated interval.
+     * (A repeated interval occurs when clocks are rolled back at the end of
+     * daylight saving time or when the UTC offset for the current zone is
+     * decreased for political reasons.) The value 0 (1) represents the earlier
+     * (later) of the two moments with the same wall time representation.
+     * @type {number}
+     */
     get fold() { return this._fold }
-
+    /**
+     * Return a Time corresponding to a timeString in one of the formats emitted
+     * by time.isoformat(). Specifically, this function supports strings in the
+     * format: `HH[:MM[:SS[.fff[fff]]]][+HH:MM[:SS[.ffffff]]]`.
+     * @param {string} timeString The time string.
+     * @returns {Time}
+     */
     static fromISOFormat(timeString) {
         function parseTimeString(str) {
             const match = /^(\d\d)(?:\:(\d\d)(?:\:(\d\d)(?:\.(\d{3})(\d{3})?)?)?)?$/.exec(str)
@@ -560,14 +820,14 @@ export class Time {
         const timeArray = parseTimeString(timeStr)
         if(timeArray == null)
             throw new ValueDateTimeError(
-                'timeString', timeString, 'invalid format')
+                'Invalid format.')
 
         let tzInfo = null
         if(offsetStr !== '') {
             const offsetArray = parseTimeString(offsetStr)
             if(offsetArray == null) {
                 throw new ValueDateTimeError(
-                    'timeString', timeString, 'invalid format')
+                    'Invalid format.')
             }
             let offset = new TimeDelta({
                 hours: offsetArray[0],
@@ -583,18 +843,32 @@ export class Time {
         return new Time(
             timeArray[0], timeArray[1], timeArray[2], timeArray[3], tzInfo)
     }
-
-    replace({hour, minute, second, microsecond, tzInfo, fold}) {
-        // we have to distinguish null and undefined because tzInfo may be null
-        if(hour === undefined) hour = this.hour
-        if(minute === undefined) minute = this.minute
-        if(second === undefined) second = this.second
-        if(microsecond === undefined) microsecond = this.microsecond
-        if(tzInfo === undefined) tzInfo = this.tzInfo
-        if(fold === undefined) fold = this.fold
+    /**
+     * Return a time with the same value, except for those attributes given new
+     * values by whichever keyword arguments are specified. Note that
+     * {tzinfo: null} can be specified to create a naive time from an aware
+     * time, without conversion of the time data.
+     * @param {Object} newValues The object consisting of new values.
+     * @param {number} [newValues.hour]
+     * @param {number} [newValues.minute]
+     * @param {number} [newValues.second]
+     * @param {number} [newValues.microsecond]
+     * @param {TZInfo} [newValues.tzInfo]
+     * @param {number} [newValues.fold]
+     * @returns {Time}
+     */
+    replace({ hour=this.hour, minute=this.minute, second=this.second,
+              microsecond=this.microsecond, tzInfo=this.tzInfo,
+              fold=this.fold }) {
         return new Time(hour, minute, second, microsecond, tzInfo, fold)
     }
-
+    /**
+     * Return a string representing the time in ISO 8601 format.
+     * @param {"auto"|"microseconds"|"milliseconds"|"seconds"|"minutes"|"hours"
+     * } timeSpec Specifies the number of additional components of the time to
+     *            include.
+     * @returns {string}
+     */
     isoFormat(timeSpec='auto') {
         if(timeSpec === 'auto') {
             timeSpec = this.microsecond ? 'microseconds' : 'seconds'
@@ -618,9 +892,8 @@ export class Time {
             break
             default:
             throw new ValueDateTimeError(
-                'timeSpec', timeSpec,
-                '"timeSpec" should be either "auto", "microseconds", "milliseconds", ' +
-                '"seconds", "minutes" or "hours"')
+                '"timeSpec" must be either "auto", "microseconds", "milliseconds", ' +
+                '"seconds", "minutes" or "hours".')
         }
 
         const offset = this.utcOffset()
@@ -629,52 +902,101 @@ export class Time {
         }
         return ret
     }
-
+    /**
+     * If tzInfo is null, returns null, else returns this.tzInfo.utcOffset(null).
+     * @returns {(TimeDelta|null)}
+     */
     utcOffset() {
         return this.tzInfo == null ? null : this.tzInfo.utcOffset(null)
     }
-
+    /**
+     * If tzInfo is null, returns null, else returns this.tzInfo.dst(null).
+     * @returns {(TimeDelta|null)}
+     */
     dst() {
         return this.tzInfo == null ? null : this.tzInfo.dst(null)
     }
-
+    /**
+     * If tzInfo is null, returns null, else returns this.tzInfo.tzName(null).
+     * @returns {(string|null)}
+     */
     tzName() {
         return this.tzInfo == null ? null : this.tzInfo.tzName(null)
     }
-
+    /**
+     * Return a string representing the time, controlled by an explicit format
+     * string.
+     * @param {string} format The format string.
+     * @returns {string}
+     */
     strftime(format) {
         const dt = DateTime.combine(new Date(1900, 1, 1), this);
         return strftime(dt, format);
     }
-
+    /**
+     * Same as isoFormat().
+     * @returns {string}
+     */
     toString() {
         return this.isoFormat()
     }
 }
+/**
+ * The earliest representable time, new Time(0, 0, 0, 0).
+ * @type {Time}
+ */
 Time.min = new Time(0, 0, 0, 0);
+/**
+ * The latest representable time, new Time(23, 59, 59, 999999).
+ * @type {Time}
+ */
 Time.max = new Time(23, 59, 59, 999999);
+/**
+ * The smallest possible difference between non-equal time objects,
+ * new TimeDelta({microseconds: 1}), although note that arithmetic on time
+ * objects is not supported.
+ * @type {TimeDelta}
+ */
 Time.resolution = new TimeDelta({microseconds: 1});
 
 
+/**
+ * A DateTime object is a single object containing all the information from a
+ * Date object and a Time object.
+ * Javascript version of
+ * https://docs.python.org/3/library/datetime.html#datetime.datetime.
+ */
 export class DateTime extends Date {
+    /**
+     * @param {number} year Between MINYEAR and MAXYEAR.
+     * @param {number} month Between 1 and 12.
+     * @param {number} day Between 1 and the number of days in the given month
+     *                     and year.
+     * @param {number} hour Between 0 and 23.
+     * @param {number} minute Between 0 and 59.
+     * @param {number} second Between 0 and 59.
+     * @param {number} microsecond Between 0 and 999999.
+     * @param {TZInfo} tzInfo The timezone information.
+     * @param {number} fold 0 or 1.
+     */
     constructor(year, month, day, hour=0, minute=0, second=0, microsecond=0,
                 tzInfo=null, fold=0) {
         super(year, month, day)
         if(hour < 0 || hour >= 24)
-            throw new RangeDateTimeError(
-                'hour', hour, '"hour" should be between 0 and 23.')
+            throw new ValueDateTimeError(
+                '"hour" must be between 0 and 23.')
         if(minute < 0 || minute >= 60)
-            throw new RangeDateTimeError(
-                'minute', minute, '"minute" should be between 0 and 59.')
+            throw new ValueDateTimeError(
+                '"minute" must be between 0 and 59.')
         if(second < 0 || second >= 60)
-            throw new RangeDateTimeError(
-                'second', second, '"second" should be between 0 and 59.')
+            throw new ValueDateTimeError(
+                '"second" must be between 0 and 59.')
         if(microsecond < 0 || microsecond >= 1000000)
-            throw new RangeDateTimeError(
-                'microsecond', microsecond, '"microsecond" should be between 0 and 999999.')
+            throw new ValueDateTimeError(
+                '"microsecond" must be between 0 and 999999.')
         if(fold !== 0 && fold !== 1)
-            throw new RangeDateTimeError(
-                'fold', fold, '"fold" should be 0 or 1.')
+            throw new ValueDateTimeError(
+                '"fold" must be 0 or 1.')
         this._hour = hour
         this._minute = minute
         this._second = second
@@ -682,14 +1004,48 @@ export class DateTime extends Date {
         this._tzInfo = tzInfo
         this._fold = fold
     }
-
+    /**
+     * Between 0 and 23.
+     * @type {number}
+     */
     get hour() { return this._hour }
+    /**
+     * Between 0 and 59.
+     * @type {number}
+     */
     get minute() { return this._minute }
+    /**
+     * Between 0 and 59.
+     * @type {number}
+     */
     get second() { return this._second }
+    /**
+     * Between 0 and 999999.
+     * @type {number}
+     */
     get microsecond() { return this._microsecond }
+    /**
+     * The object passed as the tzInfo argument to the Time constructor, or null
+     * if none was passed.
+     * @type {TZInfo}
+     */
     get tzInfo() { return this._tzInfo }
+    /**
+     * 0 or 1. Used to disambiguate wall times during a repeated interval.
+     * (A repeated interval occurs when clocks are rolled back at the end of
+     * daylight saving time or when the UTC offset for the current zone is
+     * decreased for political reasons.) The value 0 (1) represents the earlier
+     * (later) of the two moments with the same wall time representation.
+     * @type {number}
+     */
     get fold() { return this._fold }
-
+    /**
+     * Return a DateTime corresponding to the given standard library Date object.
+     * @param {stdDate} d The standard library Date object.
+     * @param {boolean} utc If true, use getUTC***() instead of get***()
+     *                      to construct DateTime.
+     * @returns {DateTime}
+     */
     static fromStdDate(d, utc=false) {
         if(!utc)
             return new DateTime(
@@ -702,32 +1058,66 @@ export class DateTime extends Date {
                 d.getUTCHours(), d.getUTCMinutes(), d.getUTCSeconds(),
                 d.getUTCMilliseconds() * 1000)
     }
-
+    /**
+     * Return the current local date and time, with tzInfo null.
+     * @returns {DateTime}
+     */
     static today() {
         return DateTime.fromStdDate(new stdDate())
     }
-
+    /**
+     * Return the current date and time.
+     * @param {TZInfo} tz If specified, the current date and time are converted
+     *                    to tz's time zone, else same as today().
+     * @returns {DateTime}
+     */
     static now(tz=null) {
         if(tz == null)
             return DateTime.today()
         return tz.fromUTC(DateTime.utcNow().replace({tzInfo: tz}))
     }
-
+    /**
+     * Return the current UTC date and time, with tzInfo null.
+     * @returns {DateTime}
+     */
     static utcNow() {
         return DateTime.fromStdDate(new stdDate(), true)
     }
-
+    /**
+     * Return the local date and time corresponding to the POSIX timestamp.
+     * @param {number} timeStamp The POSIX timestamp.
+     * @param {TZInfo} tz If null, the timestamp is converted to the
+     *                    platform's local date and time, and the returned
+     *                    DateTime object is naive. If not null, the timestamp
+     *                    is converted to tz's time zone.
+     * @returns {DateTime}
+     */
     static fromTimeStamp(timeStamp, tz=null) {
         if(tz == null)
             return DateTime.fromStdDate(new stdDate(timeStamp * 1000))
         return tz.fromUTC(
             DateTime.utcFromTimeStamp(timeStamp).replace({tzInfo: tz}))
     }
-
+    /**
+     * Return the UTC date and time corresponding to the POSIX timestamp, with
+     * tzInfo null. (The resulting object is naive.)
+     * @param {number} timeStamp The POSIX timestamp.
+     * @returns {DateTime}
+     */
     static utcFromTimeStamp(timeStamp) {
         return DateTime.fromStdDate(new stdDate(timeStamp * 1000), true)
     }
-
+    /**
+     * Return a new DateTime object whose date components are equal to the given
+     * Date object’s, and whose time components are equal to the given Time
+     * object’s. If the tzInfo argument is provided, its value is used to set
+     * the tzInfo attribute of the result, otherwise the tzInfo attribute of the
+     * time argument is used.
+     * @param {Date} date The Date object.
+     * @param {Time} time The Time object.
+     * @param {TZInfo} tzInfo The TZInfo object.
+     * @returns {DateTime}
+     */
     static combine(date, time, tzInfo=undefined) {
         if(tzInfo === undefined)
             tzInfo = time.tzInfo
@@ -736,14 +1126,25 @@ export class DateTime extends Date {
             time.hour, time.minute, time.second, time.microsecond,
             tzInfo, time.fold)
     }
-
+    /**
+     * Return a DateTime corresponding to a dateString in one of the formats
+     * emitted by Date.isoFormat() and DateTime.isoFormat().
+     * @param {string} dateString The date string.
+     */
     static fromISOFormat(dateString) {
         const dateStr = dateString.slice(0, 10);
         const timeStr = dateString.slice(11);
         return DateTime.combine(Date.fromISOFormat(dateStr),
                                 Time.fromISOFormat(timeStr));
     }
-    
+    /**
+     * Return a standard library Date object corresponding to this DateTime.
+     * Since standard library Date object has only millisecond resolution, the
+     * microsecond value is truncated.
+     * @param {boolean} utc If true, the value of getUTC***(), instead of
+     *                      get***(), will correspond to this Date.
+     * @returns {stdDate}
+     */
     toStdDate(utc=false) {
         let ret;
         if(!utc) {
@@ -759,34 +1160,65 @@ export class DateTime extends Date {
         }
         return ret;
     }
-
+    /**
+     * Return Date object with same year, month and day.
+     * @returns {Date}
+     */
     date() {
         return new Date(this.year, this.month, this.day)
     }
-
+    /**
+     * Return Time object with same hour, minute, second, microsecond and fold.
+     * tzInfo is null.
+     * @returns {Time}
+     */
     time() {
         return new Time(this.hour, this.minute, this.second, this.microsecond,
                         null, this.fold)
     }
-
+    /**
+     * Return Time object with same hour, minute, second, microsecond, fold, and
+     * tzInfo attributes.
+     * @returns {Time}
+     */
     timetz() {
         return new Time(this.hour, this.minute, this.second, this.microsecond,
                         this.tzInfo, this.fold)
     }
-
-    replace({year, month, day, hour, minute, second, microsecond, tzInfo, fold}) {
-        const newDate = super.replace({year, month, day})
-        // we have to distinguish null and undefined becase tzInfo may be null
-        if(hour === undefined) hour = this.hour
-        if(minute === undefined) minute = this.minute
-        if(second === undefined) second = this.second
-        if(microsecond === undefined) microsecond = this.microsecond
-        if(tzInfo === undefined) tzInfo = this.tzInfo
-        if(fold === undefined) fold = this.fold
-        return new DateTime(newDate.year, newDate.month, newDate.day,
+    /**
+     * Return a DateTime with the same attributes, except for those attributes
+     * given new values by whichever keyword arguments are specified. Note that
+     * {tzInfo: null} can be specified to create a naive DateTime from an aware
+     * DateTime with no conversion of date and time data.
+     * @param {Object} newValues The object consisting of new values.
+     * @param {number} [newValues.year]
+     * @param {number} [newValues.month]
+     * @param {number} [newValues.day]
+     * @param {number} [newValues.hour]
+     * @param {number} [newValues.minute]
+     * @param {number} [newValues.second]
+     * @param {number} [newValues.microsecond]
+     * @param {TZInfo} [newValues.tzInfo]
+     * @param {number} [newValues.fold]
+     * @returns {DateTime}
+     */
+    replace({
+        year=this.year, month=this.month, day=this.day, hour=this.hour,
+        minute=this.minute, second=this.second, microsecond=this.microsecond,
+        tzInfo=this.tzInfo, fold=this.fold,
+    }) {
+        return new DateTime(year, month, day,
                             hour, minute, second, microsecond, tzInfo, fold)
     }
-
+    /**
+     * Return a DateTime object with new tzInfo attribute tz, adjusting the date
+     * and time data so the result is the same UTC time as self, but in tz’s
+     * local time.
+     * If self is naive, it is presumed to represent time in the system timezone.
+     * @param {TZInfo} tz The target timezone. If null, the system local
+     *                    timezone is assumed for the target timezone.
+     * @returns {DateTime}
+     */
     asTimeZone(tz=null) {
         if(this.tzInfo === tz) return this
         const offset = this.utcOffset()
@@ -802,19 +1234,31 @@ export class DateTime extends Date {
         const ret = tmpTZ.fromUTC(utc.replace({tzInfo: tmpTZ}))
         return ret.replace({tzInfo: tz});
     }
-
+    /**
+     * If tzInfo is null, returns null, else returns this.tzInfo.utcOffset(this).
+     * @returns {(TimeDelta|null)}
+     */
     utcOffset() {
         return this.tzInfo == null ? null : this.tzInfo.utcOffset(this)
     }
-
+    /**
+     * If tzInfo is null, returns null, else returns this.tzInfo.dst(this).
+     * @returns {(TimeDelta|null)}
+     */
     dst() {
         return this.tzInfo == null ? null : this.tzInfo.dst(this)
     }
-
+    /**
+     * If tzInfo is null, returns null, else returns this.tzInfo.tzName(this).
+     * @returns {(string|null)}
+     */
     tzName() {
         return this.tzInfo == null ? null : this.tzInfo.tzName(this)
     }
-
+    /**
+     * Return POSIX timestamp corresponding to the DateTime instance.
+     * @returns {number}
+     */
     timeStamp() {
         let dt = this
         if(this.utcOffset() == null) {
@@ -823,29 +1267,78 @@ export class DateTime extends Date {
         return sub(dt, new DateTime(
             1970, 1, 1, 0, 0, 0, 0, TimeZone.utc)).totalSeconds()
     }
-
+    /**
+     * Return a string representing the date and time in ISO 8601 format.
+     * @param {string} sep One-character separator placed between the date and
+     *                     time portions of the result.
+     * @param {"auto"|"microseconds"|"milliseconds"|"seconds"|"minutes"|"hours"
+     * } timespec The number of additional components of the time to
+     *            include.
+     * @returns {string}
+     */
     isoFormat(sep='T', timespec='auto') {
         return this.date().isoFormat() + sep +
                this.timetz().isoFormat(timespec)
     }
-
+    /**
+     * Return a string representing the date and time, controlled by an explicit
+     * format string
+     * @param {string} format The format string.
+     * @returns {string}
+     */
     strftime(format) {
         return strftime(this, format)
     }
-
+    /**
+     * Same as isoFormat(' ').
+     * @returns {string}
+     */
     toString() {
         return this.isoFormat(' ')
     }
-
+    /**
+     * Same as timeStamp().
+     * @returns {number}
+     */
     valueOf() {
         return this.timeStamp()
     }
 }
+/**
+ * The earliest representable DateTime, new DateTime(MINYEAR, 1, 1).
+ * @type {DateTime}
+ */
 DateTime.min = new DateTime(MINYEAR, 1, 1)
+/**
+ * The latest representable DateTime, new DateTime(MAXYEAR, 12, 31, 23, 59, 59,
+ * 999999).
+ * @type {DateTime}
+ */
 DateTime.max = new DateTime(MAXYEAR, 12, 31, 23, 59, 59, 999999);
+/**
+ * The smallest possible difference between non-equal DateTime objects,
+ * new TimeDelta({microseconds: 1}).
+ * @type {TimeDelta}
+ */
 DateTime.resolution = new TimeDelta({microseconds: 1});
 
 
+function typeName(obj) {
+    if(obj === null) {
+        return 'null';
+    } else if(obj === undefined) {
+        return 'undefined';
+    } else {
+        return obj.constructor.name;
+    }
+}
+
+/**
+ * Add two datetime objects.
+ * @param {(TimeDelta|DateTime|Date)} a Left side value.
+ * @param {(TimeDelta|DateTime|Date)} b Right side value.
+ * @returns {(TimeDelta|DateTime|Date)}
+ */
 export function add(a, b) {
     function date_plus_timedelta(d, td) {
         d = d.toStdDate()
@@ -883,10 +1376,17 @@ export function add(a, b) {
     if(a instanceof TimeDelta && b instanceof Date) {
         return date_plus_timedelta(b, a)
     }
-    throw new TypeError('Cannot add these two types.')
+    throw new TypeDateTimeError(
+        `Cannot add type "${typeName(a)}" and type "${typeName(b)}".`)
 }
 
 
+/**
+ * Subtract two datetime objects.
+ * @param {(TimeDelta|DateTime|Date)} a Left side value.
+ * @param {(TimeDelta|DateTime|Date)} b Right side value.
+ * @returns {(TimeDelta|DateTime|Date)}
+ */
 export function sub(a, b) {
     if(a instanceof TimeDelta && b instanceof TimeDelta) {
         return new TimeDelta({
@@ -911,8 +1411,8 @@ export function sub(a, b) {
         if(!(aOffset == null && bOffset == null) &&
            a.tzInfo !== b.tzInfo) {
             if(aOffset == null || bOffset == null)
-                throw new TypeError(
-                    'Cannot subtract naive "DateTime" and aware "DateTime"')
+                throw new TypeDateTimeError(
+                    'Cannot subtract between naive "DateTime" and aware "DateTime"')
             a = sub(a, aOffset)
             b = sub(b, bOffset)
         }
@@ -930,10 +1430,16 @@ export function sub(a, b) {
     if(a instanceof Date && b instanceof Date) {
         return new TimeDelta({days: a.toOrdinal() - b.toOrdinal()})
     }
-    throw new TypeError('Cannnot subtract these two types.')
+    throw new TypeDateTimeError(
+        `Cannnot subtract type "${typeName(b)}" from type "${typeName(a)}".`)
 }
 
 
+/**
+ * Negate datetime objects.
+ * @param {TimeDelta} a The value.
+ * @returns {TimeDelta}
+ */
 export function neg(a) {
     if(a instanceof TimeDelta) {
         return new TimeDelta({
@@ -942,10 +1448,18 @@ export function neg(a) {
             microseconds: -a.microseconds,
         })
     }
-    throw new TypeError('Cannot negate this type.')
+    throw new TypeDateTimeError(`Cannot negate type "${typeName(a)}".`)
 }
 
 
+/**
+ * Compare two datetime objects.
+ * Return 0 if two are the same, 1 if left side is greater than right,
+ * -1 if right side is greater than left.
+ * @param {(TimeDelta|DateTime|Date|Time)} a Left side value.
+ * @param {(TimeDelta|DateTime|Date|Time)} b Right side value.
+ * @returns {number}
+ */
 export function cmp(a, b) {
     function _comp(a, b) {
         if(a === b) return 0
@@ -956,7 +1470,7 @@ export function cmp(a, b) {
 
     function subtractTimeDeltaFromTime(time, timeDelta) {
         const totalMicroseconds = time.microsecond - timeDelta.microseconds;
-        const totalSeconds = time.second + 
+        const totalSeconds = time.second +
             time.minute * 60 + time.hour * 3600 - timeDelta.seconds;
 
         let [q, r] = divmod(totalMicroseconds, 1000000);
@@ -985,7 +1499,7 @@ export function cmp(a, b) {
         if(!(aOffset == null && bOffset == null) &&
            a.tzInfo !== b.tzInfo) {
             if(aOffset == null || bOffset == null)
-                throw new TypeError(
+                throw new TypeDateTimeError(
                     'Cannot compare naive "DateTime" to aware "DateTime"')
             a = sub(a, aOffset)
             b = sub(b, bOffset)
@@ -1018,7 +1532,7 @@ export function cmp(a, b) {
         if(!(aOffset == null && bOffset == null) &&
            a.tzInfo !== b.tzInfo) {
             if(aOffset == null || bOffset == null)
-                throw new TypeError(
+                throw new TypeDateTimeError(
                     'Cannot compare naive "Time" object to aware "Time" object')
             a = subtractTimeDeltaFromTime(a, aOffset)
             b = subtractTimeDeltaFromTime(b, bOffset)
@@ -1035,5 +1549,6 @@ export function cmp(a, b) {
         c = _comp(a.fold, b.fold)
         return c
     }
-    throw new TypeError('Cannot compare these two types.')
+    throw new TypeDateTimeError(
+        `Cannot compare type "${typeName(a)}" to type "${typeName(b)}".`)
 }

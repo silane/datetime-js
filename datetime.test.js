@@ -1,7 +1,9 @@
 import diff from 'jest-diff';
-import {MAXYEAR, MINYEAR, TimeDelta, Date, TimeZone, Time, DateTime,
-        cmp, add, sub, ValueDateTimeError, RangeDateTimeError, LOCALTZINFO
-} from './datetime.js';
+import {
+    MAXYEAR, MINYEAR, TimeDelta, Date, TimeZone, Time, DateTime, LOCALTZINFO,
+    neg, cmp, add, sub, dtexpr, ValueDateTimeError, RangeDateTimeError,
+    SyntaxDtexprDateTimeError, ExecutionDtexprDateTimeError,
+} from './src/index.js';
 
 
 const StdDate = Function('return this')().Date;
@@ -1107,5 +1109,117 @@ describe('sub', () => {
                                    new TimeZone(new TimeDelta({})));
         expect(() => sub(naive, aware)).toThrow();
         expect(() => sub(aware, naive)).toThrow();
+    });
+});
+
+describe('neg', () => {
+    test.each([
+        [new TimeDelta({days: -128952}),
+         new TimeDelta({days: 128952})],
+        [new TimeDelta({days: 123, seconds: -2998, microseconds: 423245}),
+         new TimeDelta({days: -123, seconds: 2998, microseconds: -423245})],
+    ])('negation of %s to be %s', (a, expected) => {
+        const received = neg(a);
+        expect(received).toBeEqualDateTime(expected);
+    });
+});
+
+describe('cmp', () => {
+    test.each([
+        [new TimeDelta({microseconds: 1}), new TimeDelta({microseconds: 0}), 1],
+        [new TimeDelta({seconds: -1}), new TimeDelta({microseconds: 1}), -1],
+        [new TimeDelta({days: -1}), new TimeDelta({days: -1}), 0],
+        [new DateTime(888, 3, 4, 12, 3, 23, 829485,
+                      new TimeZone(new TimeDelta({hours: -10}))),
+         new DateTime(888, 3, 4, 12, 3, 23, 829485,
+                      new TimeZone(new TimeDelta({hours: -9}))), 1],
+        [new DateTime(2954, 1, 24, 2, 54, 20, 23546),
+         new DateTime(2955, 1, 24, 2, 54, 20, 23546), -1],
+        [new DateTime(1252, 5, 21, 18, 7, 43, 3241,
+                      new TimeZone(new TimeDelta({minutes: 121}))),
+         new DateTime(1252, 5, 21, 2, 23, 43, 3241,
+                      new TimeZone(new TimeDelta({minutes: -823}))), 0],
+        [new Date(1945, 2, 5), new Date(1921, 12, 31), 1],
+        [new Date(2894, 11, 12), new Date(2894, 11, 13), -1],
+        [new Date(543, 6, 16), new Date(543, 6, 16), 0],
+        [new Time(22, 43, 23, 27845), new Time(22, 43, 23, 27844), 1],
+        [new Time(9, 31, 32, 693903, new TimeZone(new TimeDelta({hours: 14}))),
+         new Time(22, 31, 32, 693903, new TimeZone(new TimeDelta({hours: 2}))), -1],
+        [new Time(6, 51, 0, 0, new TimeZone(new TimeDelta({minutes: 394}))),
+         new Time(0, 5, 0, 0, new TimeZone(new TimeDelta({minutes: -12}))), 0]
+    ])('cmp(%s, %s) to be %d', (a, b, expected) => {
+        const received = cmp(a, b);
+        expect(received).toBe(expected);
+    });
+
+    test('throws an error comparing naive and aware DateTime', () =>{
+        const naive = new DateTime(1, 1, 1, 0, 0, 0, 0, null);
+        const aware = new DateTime(1, 1, 1, 0, 0, 0, 0,
+                                   new TimeZone(new TimeDelta({})));
+        expect(() => cmp(naive, aware)).toThrow();
+        expect(() => cmp(aware, naive)).toThrow();
+    });
+
+    test('throws an error comparing naive and aware Time', () =>{
+        const naive = new Time(0, 0, 0, 0, null);
+        const aware = new Time(0, 0, 0, 0, new TimeZone(new TimeDelta({})));
+        expect(() => cmp(naive, aware)).toThrow();
+        expect(() => cmp(aware, naive)).toThrow();
+    });
+});
+
+describe('dtexpr', () => {
+    function proxy(strings, ...values) {
+        return {strings, values, toString() {
+            let ret = strings[0];
+            values.forEach((value, index) => {
+                ret += '${' + value.toString() + '}';
+                ret += strings[index + 1];
+            });
+            return ret;
+        }};
+    }
+    const td1 = new TimeDelta({hours: -1, minutes: 2});
+    const td2 = new TimeDelta({minutes: 4});
+    const td3 = new TimeDelta({days: 3});
+    const dt1 = new DateTime(2003, 4, 25, 18, 10, 0, 0,
+                             new TimeZone(new TimeDelta({hours: 11})));
+    const dt2 = new DateTime(2003, 4, 25, 5, 0, 0, 0,
+                             new TimeZone(new TimeDelta({hours: -3})));
+    const date1 = new Date(389, 11, 3);
+    const date2 = new Date(389, 10, 31);
+    const time1 = new Time(21, 12);
+    
+    test.each([
+        [proxy`${td1} + ${td2}`, new TimeDelta({hours: -1, minutes: 6})],
+        [proxy`${td1} + ${dt1}`, new DateTime(
+            2003, 4, 25, 17, 12, 0, 0, new TimeZone(new TimeDelta({hours: 11}))
+         )],
+        [proxy`${td2} > ${td1}`, true],
+        [proxy`-${td1} + ${dt2} <= ${dt1}`, false],
+        [proxy`-(${td1} - ${td2})`, new TimeDelta({hours: 1, minutes: 2})],
+        [proxy`(-${td1} - ${td2}) + ${dt1} == ${dt2} + ${td2}`, true],
+        [proxy`${date2} - ${td3}`, new Date(389, 10, 28)],
+        [proxy`${date1} >= ${date2} + ${td3}`, true],
+        [proxy`${time1} != ${time1}`, false],
+    ])('dtexpr %s to be %p', (templateLitral, expected) => {
+        const received = dtexpr(templateLitral.strings,
+                                ...templateLitral.values);
+        if(typeof received === 'object' && typeof received === 'object') {
+            expect(received).toBeEqualDateTime(expected);
+        } else {
+            expect(received).toBe(expected);
+        }
+    });
+
+    test('throws SyntaxDtexprDateTimeError on invalid expression', () => {
+        expect(() => dtexpr`abcd`).toThrow(SyntaxDtexprDateTimeError);
+    });
+
+    test('throws ExecutionDtexprDateTimeError on not supported operation',
+         () => {
+        expect(
+            () => dtexpr`${new Time()} == ${new Date(1, 1, 1)}`
+        ).toThrow(ExecutionDtexprDateTimeError);
     });
 });

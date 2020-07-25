@@ -4,9 +4,9 @@ import commonjs from '@rollup/plugin-commonjs';
 
 
 module.exports = [{
-    input: 'datetime.js',
+    input: 'src/index.js',
     output: [{
-        file: 'lib/datetime.umd.js',
+        file: 'umd/datetime.js',
         format: 'umd',
         name: 'datetime',
     }],
