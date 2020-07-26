@@ -1134,8 +1134,10 @@ export class DateTime extends Date {
     static fromISOFormat(dateString) {
         const dateStr = dateString.slice(0, 10);
         const timeStr = dateString.slice(11);
-        return DateTime.combine(Date.fromISOFormat(dateStr),
-                                Time.fromISOFormat(timeStr));
+        return DateTime.combine(
+            Date.fromISOFormat(dateStr),
+            timeStr ? Time.fromISOFormat(timeStr) : new Time(),
+        );
     }
     /**
      * Return a standard library Date object corresponding to this DateTime.

@@ -795,6 +795,7 @@ describe('DateTime', () => {
         ['2899-06-02 05-23:13:46',
          new DateTime(2899, 6, 2, 5, 0, 0, 0, new TimeZone(
              new TimeDelta({hours: -23, minutes: -13, seconds: -46})))],
+        ['1049-09-13', new DateTime(1049, 9, 13)],
     ])('fromISOFormat("%s")', (timeString, expected) => {
         const received = DateTime.fromISOFormat(timeString);
         expect(received).toBeEqualDateTime(expected);
