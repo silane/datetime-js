@@ -811,11 +811,11 @@ export class Time {
             return ret
         }
 
-        let sepIdx = timeString.search(/[+-]/)
+        let sepIdx = timeString.search(/[Z+-]/)
         if(sepIdx === -1)
             sepIdx = timeString.length
         const timeStr = timeString.slice(0, sepIdx)
-        const offsetStr = timeString.slice(sepIdx + 1)
+        const offsetStr = timeString.slice(sepIdx)
 
         const timeArray = parseTimeString(timeStr)
         if(timeArray == null)
@@ -823,8 +823,10 @@ export class Time {
                 'Invalid format.')
 
         let tzInfo = null
-        if(offsetStr !== '') {
-            const offsetArray = parseTimeString(offsetStr)
+        if(offsetStr === 'Z') {
+            tzInfo = new TimeZone(new TimeDelta({}));
+        } else if(offsetStr !== '') {
+            const offsetArray = parseTimeString(offsetStr.slice(1))
             if(offsetArray == null) {
                 throw new ValueDateTimeError(
                     'Invalid format.')
@@ -835,7 +837,7 @@ export class Time {
                 seconds: offsetArray[2],
                 microseconds: offsetArray[3],
             })
-            if(timeString[sepIdx] === '-')
+            if(offsetStr[0] === '-')
                 offset = neg(offset)
             tzInfo = new TimeZone(offset)
         }

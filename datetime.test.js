@@ -499,6 +499,8 @@ describe('Time', () => {
         ['23:02:44+20:15',
          new Time(23, 2, 44, 0,
                   new TimeZone(new TimeDelta({hours: 20, minutes: 15})))],
+        ['19:31Z',
+          new Time(19, 31, 0, 0, new TimeZone(new TimeDelta({})))],
     ])('fromISOFormat("%s")', (timeString, expected) => {
         const t = Time.fromISOFormat(timeString);
         expect(t).toBeEqualDateTime(expected);
