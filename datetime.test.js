@@ -276,13 +276,15 @@ describe('Date', () => {
     test.each([
         ['0980-09-03', new Date(980, 9, 3)],
         ['2145-10-26', new Date(2145, 10, 26)],
-    ])('fromISOFormat("%s")', (str, date) => {
-        expect(cmp(Date.fromISOFormat(str), date)).toBe(0);
+        ['89100131', new Date(8910, 1, 31)],
+        ['00311109', new Date(31, 11, 9)],
+    ])('fromISOFormat("%s")', (dateString, expected) => {
+        expect(Date.fromISOFormat(dateString)).toBeEqualDateTime(expected);
     });
 
     test.each([
         ['201-09-23'], ['0938/02/11'], ['8477-11-31'], ['03789-04-12'],
-        ['2940-01-aa'],
+        ['2940-01-aa'], ['19942101'], ['1849011'], ['431901213']
     ])('fromISOFormat("%s") throws an error', (str) => {
         expect(() => Date.fromISOFormat(str)).toThrow();
     })
@@ -501,6 +503,18 @@ describe('Time', () => {
                   new TimeZone(new TimeDelta({hours: 20, minutes: 15})))],
         ['19:31Z',
           new Time(19, 31, 0, 0, new TimeZone(new TimeDelta({})))],
+        ['0312', new Time(3, 12, 0)],
+        ['135928', new Time(13, 59, 28)],
+        ['040000.831', new Time(4, 0, 0, 831000)],
+        ['004121.210010', new Time(0, 41, 21, 210010)],
+        ['221944.961+2100',
+         new Time(22, 19, 44, 961000,
+                  new TimeZone(new TimeDelta({hours: 21})))],
+        ['1510-0030',
+         new Time(15, 10, 0, 0,
+                  new TimeZone(new TimeDelta({minutes: -30})))],
+        ['234551.001Z',
+         new Time(23, 45, 51, 1000, new TimeZone(new TimeDelta({})))],
     ])('fromISOFormat("%s")', (timeString, expected) => {
         const t = Time.fromISOFormat(timeString);
         expect(t).toBeEqualDateTime(expected);
@@ -512,6 +526,7 @@ describe('Time', () => {
 
     test.each([
         ['24'], ['02:60'], ['14:9'], ['10:20:41.3890'], ['19:41-03:103'],
+        ['0281', '134', '213348Z+0315']
     ])('fromISOFormat("%s") throws error', timeString => {
         expect(() => Time.fromISOFormat(timeString)).toThrow();
     });
@@ -797,6 +812,11 @@ describe('DateTime', () => {
         ['2899-06-02 05-23:13:46',
          new DateTime(2899, 6, 2, 5, 0, 0, 0, new TimeZone(
              new TimeDelta({hours: -23, minutes: -13, seconds: -46})))],
+        ['20090109T0050',
+         new DateTime(2009, 1, 9, 0, 50, 0, 0)],
+        ['00011130 203723.620935Z',
+         new DateTime(1, 11, 30, 20, 37, 23, 620935, new TimeZone(
+             new TimeDelta({})))],
         ['1049-09-13', new DateTime(1049, 9, 13)],
     ])('fromISOFormat("%s")', (timeString, expected) => {
         const received = DateTime.fromISOFormat(timeString);

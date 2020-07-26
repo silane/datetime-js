@@ -396,14 +396,16 @@ export class Date {
     }
     /**
      * Return a Date corresponding to a dateString given in the format
-     * YYYY-MM-DD.
+     * `YYYY-MM-DD` or `YYYYMMDD`.
      * @param {string} dateString The date string.
      * @returns {Date}
      */
     static fromISOFormat(dateString) {
-        const match = /^(\d\d\d\d)-(\d\d)-(\d\d)$/.exec(dateString);
-        if(match == null)
+        let match = (/^(\d\d\d\d)-(\d\d)-(\d\d)$/.exec(dateString) ||
+                     /^(\d\d\d\d)(\d\d)(\d\d)$/.exec(dateString));
+        if(match == null) {
             throw new ValueDateTimeError('Invalid format.');
+        }
         const [year, month, day] = match.slice(1).map(Number);
         return new Date(year, month, day);
     }
@@ -793,15 +795,19 @@ export class Time {
      */
     get fold() { return this._fold }
     /**
-     * Return a Time corresponding to a timeString in one of the formats emitted
-     * by time.isoformat(). Specifically, this function supports strings in the
-     * format: `HH[:MM[:SS[.fff[fff]]]][+HH:MM[:SS[.ffffff]]]`.
+     * Return a Time corresponding to a dateString given in the format
+     * `HH[:MM[:SS[.fff[fff]]]][Z|((+|-)HH[:MM[:SS[.fff[fff]]]])]` or
+     * `HH[MM[SS[.fff[fff]]]][Z|((+|-)HH[MM[SS[.fff[fff]]]])]`.
+
      * @param {string} timeString The time string.
      * @returns {Time}
      */
     static fromISOFormat(timeString) {
         function parseTimeString(str) {
-            const match = /^(\d\d)(?:\:(\d\d)(?:\:(\d\d)(?:\.(\d{3})(\d{3})?)?)?)?$/.exec(str)
+            const match = (
+                /^(\d\d)(?:\:(\d\d)(?:\:(\d\d)(?:\.(\d{3})(\d{3})?)?)?)?$/.exec(str) ||
+                /^(\d\d)(?:(\d\d)(?:(\d\d)(?:\.(\d{3})(\d{3})?)?)?)?$/.exec(str)
+            )
             if(match == null)
                 return null
             match.splice(0, 1)
@@ -1134,8 +1140,11 @@ export class DateTime extends Date {
      * @param {string} dateString The date string.
      */
     static fromISOFormat(dateString) {
-        const dateStr = dateString.slice(0, 10);
-        const timeStr = dateString.slice(11);
+        let sepIdx = dateString.search(/[^\d\-]/);
+        if(sepIdx === -1)
+            sepIdx = dateString.length;
+        const dateStr = dateString.slice(0, sepIdx);
+        const timeStr = dateString.slice(sepIdx + 1);
         return DateTime.combine(
             Date.fromISOFormat(dateStr),
             timeStr ? Time.fromISOFormat(timeStr) : new Time(),
