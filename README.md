@@ -1,10 +1,27 @@
 # datetime
 
-Date and time library for JavaScript similar to Python's "datetime" package
+Date and time library for JavaScript similar to Python's "datetime" package.
 
-## Getting Started
+Available for ES Module, Common JS and browser(CDN).
+
+## Getting Started with Browser
+Add `script` tag to your HTML.
+```html
+<script src="https://cdn.jsdelivr.net/npm/@silane/datetime/umd/datetime.js"></script>
+```
+Then a global variable `datetime` contains all objects exported by this library.
+```html
+<script>
+const Date = datetime.Date;
+const TimeDelta = datetime.TimeDelta;
+const dtexpr = datetime.dtexpr;
+// So on...
+</script>
+```
+
+## Getting Started with Node
 ### Install
-```sh
+```shell
 npm install @silane/datetime
 ```
 
