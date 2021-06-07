@@ -25,7 +25,11 @@
     "time",
     "timedelta",
     "duration",
-    "timezone"
+    "timezone",
+    "python",
+    "esmodule",
+    "commonjs",
+    "browser"
   ],
   "author": "silane",
   "files": [
