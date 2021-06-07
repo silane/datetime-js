@@ -38,7 +38,7 @@ const { Date, TimeDelta, dtexpr } = require('@silane/datetime');
 ```
 
 ## Features
-This library has the almost same classes and functions as ["datetime" package in Python](https://docs.python.org/ja/3/library/datetime.html).
+This library has the almost same classes and functions as ["datetime" package in Python](https://docs.python.org/3/library/datetime.html).
 
 The differences are as follows.
 - Identifier names are changed in order to adapt to JavaScript's naming style.
