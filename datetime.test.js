@@ -1,4 +1,4 @@
-import diff from 'jest-diff';
+import { diff } from 'jest-diff';
 import {
     MAXYEAR, MINYEAR, TimeDelta, Date, TimeZone, Time, DateTime, LOCALTZINFO,
     neg, cmp, add, sub, dtexpr, ValueDateTimeError, RangeDateTimeError,
