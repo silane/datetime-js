@@ -1083,11 +1083,14 @@ describe('add', () => {
          new DateTime(4019, 5, 24, 11, 50, 8, 972011,
                       new TimeZone(new TimeDelta({hours: 5})))],
     ])('adds %s and %s to be %s', (a, b, expected) => {
-        const added = add(a, b);
-        expect(added).toBeEqualDateTime(expected);
-        if(expected.tzInfo !== undefined) {
-            const tz = a.tzInfo !== undefined ? a.tzInfo : b.tzInfo;
-            expect(added.tzInfo).toBe(tz);
+        const received = add(a, b);
+        expect(received).toBeEqualDateTime(expected);
+        if(expected.utcOffset !== undefined) {
+            const expectedOffset = expected.utcOffset();
+            const receivedOffset = received.utcOffset();
+            if(expectedOffset !== null || receivedOffset !== null) {
+                expect(receivedOffset).toBeEqualDateTime(expectedOffset);
+            }
         }
     });
 });
@@ -1119,9 +1122,12 @@ describe('sub', () => {
     ])('subtracts %s from %s to be %s', (a, b, expected) => {
         const received = sub(b, a);
         expect(received).toBeEqualDateTime(expected);
-        if(expected.tzInfo !== undefined) {
-            const tz = a.tzInfo !== undefined ? a.tzInfo : b.tzInfo;
-            expect(received.tzInfo).toBe(tz);
+        if(expected.utcOffset !== undefined) {
+            const expectedOffset = expected.utcOffset();
+            const receivedOffset = received.utcOffset();
+            if(expectedOffset !== null || receivedOffset !== null) {
+                expect(receivedOffset).toBeEqualDateTime(expectedOffset);
+            }
         }
     });
 
