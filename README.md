@@ -96,12 +96,21 @@ dtexpr`${d1} - ${td2} == ${d2}` // returns true
   - TimeDelta + TimeDelta -> TimeDelta
   - Date + TimeDelta -> Date
   - DateTime + TimeDelta -> DateTime
+  - Time + TimeDelta -> Time
+    - Not defined in the Python library.
+    - Time cycles every 24 hours, which means 21:00 plus 6 hours is 03:00.
 - Subtraction -
   - TimeDelta - TimeDelta -> TimeDelta
   - DateTime - TimeDelta -> DateTime
   - DateTime - DateTime -> TimeDelta
   - Date - TimeDelta -> Date
   - Date - Date -> TimeDelta
+  - Time - TimeDelta -> Time
+    - Not defined in the Python library.
+    - Same as `Time + (-TimeDelta)`.
+  - Time - Time -> TimeDelta
+    - Not defined in the Python library.
+    - Result is always positive duration, which means 9:00 minus 10:00 is 23 hours.
 - Equality ==, !=
   - TimeDelta == TimeDelta -> boolean
   - DateTime == DateTime -> boolean

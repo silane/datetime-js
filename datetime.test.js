@@ -1082,6 +1082,19 @@ describe('add', () => {
                       new TimeZone(new TimeDelta({hours: 5}))),
          new DateTime(4019, 5, 24, 11, 50, 8, 972011,
                       new TimeZone(new TimeDelta({hours: 5})))],
+        [
+            new Time(
+                23, 19, 34, 729, new TimeZone(new TimeDelta({ minutes: -390}))
+            ), new TimeDelta({
+                hours: 8, minutes: 38, seconds: 53, microseconds: 98
+            }), new Time(
+                7, 58, 27, 827, new TimeZone(new TimeDelta({ minutes: -390 }))
+            )
+        ], [
+            new TimeDelta({ days: -3892, hours: -38, minutes: -32}),
+            new Time(8, 33),
+            new Time(18, 1)
+        ]
     ])('adds %s and %s to be %s', (a, b, expected) => {
         const received = add(a, b);
         expect(received).toBeEqualDateTime(expected);
@@ -1119,6 +1132,19 @@ describe('sub', () => {
         [new Date(8190, 5, 29),
          new Date(8481, 3, 24),
          new TimeDelta({days: 106220})],
+        [
+            new TimeDelta({
+                hours: -9, minutes: -39, seconds: -9, microseconds: -460
+            }),
+            new Time(15, 57, 25, 334),
+            new Time(1, 36, 34, 794)
+        ], [
+            new Time(
+                21, 39, 0, 0, new TimeZone(new TimeDelta({ minutes: 450 }))
+            ), new Time(
+                10, 11, 0, 0, new TimeZone(new TimeDelta({ minutes: 90 }))
+            ), new TimeDelta({ hours: 18, minutes: 32 })
+        ]
     ])('subtracts %s from %s to be %s', (a, b, expected) => {
         const received = sub(b, a);
         expect(received).toBeEqualDateTime(expected);
@@ -1139,6 +1165,16 @@ describe('sub', () => {
         expect(() => sub(naive, aware)).toThrow();
         expect(() => sub(aware, naive)).toThrow();
     });
+
+    test(
+        'throws an error taking difference between naive and aware Time',
+        () =>{
+            const naive = new Time(0, 0, 0, 0, null);
+            const aware = new Time(0, 0, 0, 0, new TimeZone(new TimeDelta({})));
+            expect(() => sub(naive, aware)).toThrow();
+            expect(() => sub(aware, naive)).toThrow();
+        }
+    );
 });
 
 describe('neg', () => {

@@ -1348,9 +1348,9 @@ function typeName(obj) {
 
 /**
  * Add two datetime objects.
- * @param {(TimeDelta|DateTime|Date)} a Left side value.
- * @param {(TimeDelta|DateTime|Date)} b Right side value.
- * @returns {(TimeDelta|DateTime|Date)}
+ * @param {(TimeDelta|DateTime|Date|Time)} a Left side value.
+ * @param {(TimeDelta|DateTime|Date|Time)} b Right side value.
+ * @returns {(TimeDelta|DateTime|Date|Time)}
  */
 export function add(a, b) {
     function date_plus_timedelta(d, td) {
@@ -1368,6 +1368,22 @@ export function add(a, b) {
             tzInfo: dt.tzInfo,
         })
         return ret.replace({microsecond: ret.microsecond + microseconds[1]})
+    }
+
+    function time_plus_timedelta(t, td) {
+        const total_microseconds = t.microsecond + td.microseconds;
+        const total_seconds = t.second + t.minute * 60
+                              + t.hour * 3600 + td.seconds;
+
+        let [q, r] = divmod(total_microseconds, 1000000);
+        const microsecond = r;
+        [q, r] = divmod(total_seconds + q, 60);
+        const second = r;
+        [q, r] = divmod(q, 60);
+        const minute = r;
+        [q, r] = divmod(q, 24);
+        const hour = r;
+        return new Time(hour, minute, second, microsecond, t.tzInfo, t.fold);
     }
 
     if(a instanceof TimeDelta && b instanceof TimeDelta) {
@@ -1389,6 +1405,12 @@ export function add(a, b) {
     if(a instanceof TimeDelta && b instanceof Date) {
         return date_plus_timedelta(b, a)
     }
+    if(a instanceof Time && b instanceof TimeDelta) {
+        return time_plus_timedelta(a, b);
+    }
+    if(a instanceof TimeDelta && b instanceof Time) {
+        return time_plus_timedelta(b, a);
+    }
     throw new TypeDateTimeError(
         `Cannot add type "${typeName(a)}" and type "${typeName(b)}".`)
 }
@@ -1396,9 +1418,9 @@ export function add(a, b) {
 
 /**
  * Subtract two datetime objects.
- * @param {(TimeDelta|DateTime|Date)} a Left side value.
- * @param {(TimeDelta|DateTime|Date)} b Right side value.
- * @returns {(TimeDelta|DateTime|Date)}
+ * @param {(TimeDelta|DateTime|Date|Time)} a Left side value.
+ * @param {(TimeDelta|DateTime|Date|Time)} b Right side value.
+ * @returns {(TimeDelta|DateTime|Date|Time)}
  */
 export function sub(a, b) {
     if(a instanceof TimeDelta && b instanceof TimeDelta) {
@@ -1443,6 +1465,36 @@ export function sub(a, b) {
     if(a instanceof Date && b instanceof Date) {
         return new TimeDelta({days: a.toOrdinal() - b.toOrdinal()})
     }
+    if(a instanceof Time && b instanceof TimeDelta) {
+        return add(a, neg(b));
+    }
+    if(a instanceof Time && b instanceof Time) {
+        const aOffset = a.utcOffset();
+        const bOffset = b.utcOffset();
+        if(!(aOffset == null && bOffset == null) &&
+           a.tzInfo !== b.tzInfo) {
+            if(aOffset == null || bOffset == null)
+                throw new TypeDateTimeError(
+                    'Cannot subtract between naive "Time" and aware "Time"'
+                );
+            a = sub(a, aOffset)
+            b = sub(b, bOffset)
+        }
+
+        const aTimeDelta = new TimeDelta({
+            hours: a.hour, minutes: a.minute, seconds: a.second,
+            microseconds: a.microsecond
+        });
+        const bTimeDelta = new TimeDelta({
+            hours: b.hour, minutes: b.minute, seconds: b.second,
+            microseconds: b.microsecond
+        });
+
+        const ret = sub(aTimeDelta, bTimeDelta);
+        return new TimeDelta({
+            seconds: ret.seconds, microseconds: ret.microseconds
+        });
+    }
     throw new TypeDateTimeError(
         `Cannnot subtract type "${typeName(b)}" from type "${typeName(a)}".`)
 }
@@ -1480,23 +1532,6 @@ export function cmp(a, b) {
         if(a < b) return -1
         throw new TypeError()
     }
-
-    function subtractTimeDeltaFromTime(time, timeDelta) {
-        const totalMicroseconds = time.microsecond - timeDelta.microseconds;
-        const totalSeconds = time.second +
-            time.minute * 60 + time.hour * 3600 - timeDelta.seconds;
-
-        let [q, r] = divmod(totalMicroseconds, 1000000);
-        const microsecond = r;
-        [q, r] = divmod(totalSeconds + q, 60);
-        const second = r;
-        [q, r] = divmod(q, 60);
-        const minute = r;
-        [q, r] = divmod(q, 24);
-        const hour = r;
-        return new Time(hour, minute, second, microsecond, null, time.fold);
-    }
-
 
     if(a instanceof TimeDelta && b instanceof TimeDelta) {
         let c = _comp(a.days, b.days)
@@ -1547,8 +1582,8 @@ export function cmp(a, b) {
             if(aOffset == null || bOffset == null)
                 throw new TypeDateTimeError(
                     'Cannot compare naive "Time" object to aware "Time" object')
-            a = subtractTimeDeltaFromTime(a, aOffset)
-            b = subtractTimeDeltaFromTime(b, bOffset)
+            a = sub(a, aOffset)
+            b = sub(b, bOffset)
         }
 
         let c = _comp(a.hour, b.hour)
