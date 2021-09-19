@@ -13,7 +13,7 @@ export const MINYEAR = 1
 export const MAXYEAR = 9999
 
 
-const stdDate = Function('return this')().Date;
+const stdDate = globalThis.Date;
 
 
 /**
