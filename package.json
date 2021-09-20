@@ -1,6 +1,6 @@
 {
   "name": "@silane/datetime",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Date and time library similar to Python's \"datetime\" package.",
   "type": "module",
   "module": "./src/index.js",
