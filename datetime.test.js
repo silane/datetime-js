@@ -1254,6 +1254,7 @@ describe('dtexpr', () => {
     const date1 = new Date(389, 11, 3);
     const date2 = new Date(389, 10, 31);
     const time1 = new Time(21, 12);
+    const time2 = new Time(20, 18);
     
     test.each([
         [proxy`${td1} + ${td2}`, new TimeDelta({hours: -1, minutes: 6})],
@@ -1266,7 +1267,7 @@ describe('dtexpr', () => {
         [proxy`(-${td1} - ${td2}) + ${dt1} == ${dt2} + ${td2}`, true],
         [proxy`${date2} - ${td3}`, new Date(389, 10, 28)],
         [proxy`${date1} >= ${date2} + ${td3}`, true],
-        [proxy`${time1} != ${time1}`, false],
+        [proxy`${time1} < ${time1}`, false],
     ])('dtexpr %s to be %p', (templateLitral, expected) => {
         const received = dtexpr(templateLitral.strings,
                                 ...templateLitral.values);
@@ -1286,5 +1287,14 @@ describe('dtexpr', () => {
         expect(
             () => dtexpr`${new Time()} == ${new Date(1, 1, 1)}`
         ).toThrow(ExecutionDtexprDateTimeError);
+    });
+
+    test('expression tree cache', () => {
+        expect(
+            dtexpr`${time1} + ${td1} != ${time2} - ${td2} - ${td3}`
+        ).toBe(false);
+        expect(
+            dtexpr`${time1} + ${td1} != ${time2} - ${td2} - ${td3}`
+        ).toBe(false);
     });
 });

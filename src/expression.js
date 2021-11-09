@@ -45,38 +45,45 @@ Original Error: ${this.originalError}`;
     }
 }
 
+class Variable {
+    constructor(name) {
+        this.name = name;
+    }
+}
+
 class Node {
     constructor(pos) {
         this.pos = pos;
     }
-    execute() {
+    execute(context) {
         throw new NotImplementedDateTimeError();
     }
 }
 
-class ValueNode extends Node {
-    constructor(value, pos) {
+class VariableNode extends Node {
+    constructor(variableName, pos) {
         super(pos);
-        this.value = value;
+        this.variableName = variableName;
     }
-    execute() {
-        return this.value;
+    execute(context) {
+        if(this.variableName in context.variables) {
+            return context.variables[this.variableName];
+        } else {
+            throw new ExecutionDtexprDateTimeError(
+                null, this.pos, null,
+                `Varibale "${this.variableName}" is not defined in the execution context`,
+            );
+        }
     }
 }
-
-class NumberNode extends ValueNode {}
-class TimeDeltaNode extends ValueNode {}
-class DateNode extends ValueNode {}
-class TimeNode extends ValueNode {}
-class DateTimeNode extends ValueNode {}
 
 class NegNode extends Node {
     constructor(node, pos) {
         super(pos);
         this.node = node;
     }
-    execute() {
-        const value = this.node.execute();
+    execute(context) {
+        const value = this.node.execute(context);
         try {
             return neg(value);
         } catch(e) {
@@ -104,9 +111,9 @@ class CommonBinaryNode extends BinaryNode {
     operate(leftValue, rightValue) {
         throw new NotImplementedDateTimeError();
     }
-    execute() {
-        const lVal = this.lhs.execute();
-        const rVal = this.rhs.execute();
+    execute(context) {
+        const lVal = this.lhs.execute(context);
+        const rVal = this.rhs.execute(context);
         try {
             return this.operate(lVal, rVal);
         } catch(e) {
@@ -229,29 +236,8 @@ class ParsingStr {
             return '';
         }
     }
-    consumeIfTimeDelta() {
-        if(this.s[this.pos1] instanceof TimeDelta) {
-            return this.s[this.pos1++];
-        } else {
-            return null;
-        }
-    }
-    consumeIfDate() {
-        if(this.s[this.pos1] instanceof Date) {
-            return this.s[this.pos1++];
-        } else {
-            return null;
-        }
-    }
-    consumeIfTime() {
-        if(this.s[this.pos1] instanceof Time) {
-            return this.s[this.pos1++];
-        } else {
-            return null;
-        }
-    }
-    consumeIfDateTime() {
-        if(this.s[this.pos1] instanceof DateTime) {
+    consumeIfVariable() {
+        if(this.s[this.pos1] instanceof Variable) {
             return this.s[this.pos1++];
         } else {
             return null;
@@ -343,26 +329,25 @@ function realexpr(s) {
         }
         return lhs;
     }
-    const td = s.consumeIfTimeDelta();
-    if(td != null) {
-        return new TimeDeltaNode(td, pos);
+    const variable = s.consumeIfVariable();
+    if(variable != null) {
+        return new VariableNode(variable.name, pos);
     }
-    const date = s.consumeIfDate();
-    if(date != null) {
-        return new DateNode(date, pos);
-    }
-    const time = s.consumeIfTime();
-    if(time != null) {
-        return new TimeNode(time, pos);
-    }
-    const dt = s.consumeIfDateTime();
-    if(dt != null) {
-        return new DateTimeNode(dt, pos);
-    }
-    throw new SyntaxDtexprDateTimeError(
-        s.s, pos, 'Unexpected token.');
+    throw new SyntaxDtexprDateTimeError(s.s, pos, 'Unexpected token.');
 }
 
+
+function isExpressionTokenListSame(a, b) {
+    if(a.length !== b.length) return false;
+    return a.map((x, i) => [x, b[i]]).every(([aToken, bToken]) => {
+        if(aToken === bToken) return true;
+        return (
+            aToken instanceof Variable && bToken instanceof Variable
+            && aToken.name === bToken.name
+        );
+    });
+}
+const expressionCache = [];
 
 /**
  * Tagged template function to perform operations on datetime objects.
@@ -370,15 +355,26 @@ function realexpr(s) {
  * @param  {...any} values Values to be passed by tagged template.
  */
 export function dtexpr(strings, ...values) {
+    const variables = values.map((x, i) => [new Variable(`var_${i}`), x]);
     let list = [strings[0]];
-    values.forEach((value, i) => {
-        list.push(value);
+    variables.forEach((variable, i) => {
+        list.push(variable[0]);
         list.push(strings[i + 1]);
     });
     list = list.filter(x => !(typeof x === 'string' && !x));
-    const expression = expr(new ParsingStr(list));
+
+    let expression = expressionCache.find(
+        x => isExpressionTokenListSame(x[0], list)
+    )?.[1] ?? null;
+    if(!expression) {
+        expression = expr(new ParsingStr(list));
+        expressionCache.push([list, expression]);
+    }
+
     try {
-        return expression.execute();
+        return expression.execute({ variables: Object.fromEntries(
+            variables.map(x => [x[0].name, x[1]])
+        )});
     } catch (e) {
         if(e instanceof ExecutionDtexprDateTimeError) {
             e.expression = list;
