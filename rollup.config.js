@@ -1,9 +1,9 @@
 import resolve from '@rollup/plugin-node-resolve';
-import babel from 'rollup-plugin-babel';
 import commonjs from '@rollup/plugin-commonjs';
+import { babel } from '@rollup/plugin-babel';
 
 
-module.exports = [{
+export default {
     input: 'src/index.js',
     output: [{
         file: 'umd/datetime.js',
@@ -12,6 +12,7 @@ module.exports = [{
     }],
     plugins: [
         resolve(),
+        commonjs(),
         babel({
             exclude: 'node_modules/**',
             presets: [[
@@ -23,7 +24,7 @@ module.exports = [{
                     corejs: 3,
                 },
             ]],
+            babelHelpers: 'bundled',
         }),
-        commonjs(),
     ],
-}];
+};
