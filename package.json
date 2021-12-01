@@ -13,7 +13,8 @@
     "test": "jest",
     "build": "npm run build:cjs && npm run build:browser",
     "build:cjs": "babel src --env-name node-cjs --out-dir lib --out-file-extension .cjs",
-    "build:browser": "rollup -c"
+    "build:browser": "rollup -c",
+    "prepublishOnly": "npm test && npm run build"
   },
   "repository": {
     "type": "git",
