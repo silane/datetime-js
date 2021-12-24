@@ -166,6 +166,30 @@ describe('TimeDelta', () => {
         expect(cmp(TimeDelta.resolution, new TimeDelta({microseconds: 1}))).toBe(0);
     });
 
+    test('throws an error constructing TimeDelta with argument of NaN', () => {
+        expect(
+            () => new TimeDelta({days: Number.NaN})
+        ).toThrow(ValueDateTimeError);
+        expect(
+            () => new TimeDelta({seconds: Number.NaN})
+        ).toThrow(ValueDateTimeError);
+        expect(
+            () => new TimeDelta({microseconds: Number.NaN})
+        ).toThrow(ValueDateTimeError);
+        expect(
+            () => new TimeDelta({weeks: Number.NaN})
+        ).toThrow(ValueDateTimeError);
+        expect(
+            () => new TimeDelta({hours: Number.NaN})
+        ).toThrow(ValueDateTimeError);
+        expect(
+            () => new TimeDelta({minutes: Number.NaN})
+        ).toThrow(ValueDateTimeError);
+        expect(
+            () => new TimeDelta({milliseconds: Number.NaN})
+        ).toThrow(ValueDateTimeError);
+    });
+
     test('throws an error constructing TimeDelta lesser than "min"', () => {
         const min = TimeDelta.min;
         expect(() => new TimeDelta(
@@ -219,10 +243,15 @@ describe('Date', () => {
         [2019, 1, -1],
         [2019, 1, 32],
         [2019, 2, 29],
-    ])('throws an error calling constructor with year=%i, month=%i, day=%i',
+        [Number.NaN, 1, 1],
+        [1, 'abc', 1],
+        [1, 1, undefined],
+    ])(
+        'throws an error calling constructor with year=%p, month=%p, day=%p',
         (year, month, day) => {
             expect(() => new Date(year, month, day)).toThrow(RangeDateTimeError);
-    });
+        }
+    );
 
     test.each([
         [new Date(2019, 3, 31), new Date(2019, 3, 31), 0],
@@ -437,13 +466,19 @@ describe('Time', () => {
         [23, 59, 60, 0, null, 0],
         [23, 59, 59, 1000000, null, 0],
         [23, 59, 59, 999999, null, 2],
-    ])('throws an error calling constructor with hour=%j, minute=%j, ' +
-       'second=%j, microsecond=%j, tzInfo=%o, fold=%j',
+        [Number.NaN, 0, 0, 0, null, 0],
+        [0, 'abc', 0, 0, null, 0],
+        [0, 0, {}, 0, null, 0],
+        [0, 0, 0, Number.NaN, null, 0],
+        [0, 0, 0, 0, null, 'abc'],
+    ])('throws an error calling constructor with hour=%p, minute=%p, ' +
+       'second=%p, microsecond=%p, tzInfo=%p, fold=%p',
         (hour, minute, second, microsecond, tzInfo, fold) => {
             expect(() => new Time(
                 hour, minute, second, microsecond, tzInfo, fold
             )).toThrow(RangeDateTimeError);
-    });
+        }
+    );
 
     test.each([
         [new Time(9, 0, 5, 10, null, 0), new Time(9, 0, 5, 10, null, 0), 0],
@@ -666,13 +701,22 @@ describe('DateTime', () => {
         [1, 1, 1, 0, 0, 60, 0, null, 0],
         [1, 1, 1, 0, 0, 0, 1000000, null, 0],
         [1, 1, 1, 0, 0, 0, 0, null, 2],
-    ])('throws an error calling constructor with year=%j, month=%j, day=%j, ' +
-       'hour=%j, minute=%j, second=%j, microsecond=%j, tzInfo=%o, fold=%j',
+        [Number.NaN, 1, 1, 0, 0, 0, 0, null, 0],
+        [1, 'abc', 1, 0, 0, 0, 0, null, 0],
+        [1, 1, undefined, 0, 0, 0, 0, null, 0],
+        [1, 1, 1, {}, 0, 0, 0, null, 0],
+        [1, 1, 1, 0, Number.NaN, 0, 0, null, 0],
+        [1, 1, 1, 0, 0, 'abc', 0, null, 0],
+        [1, 1, 1, 0, 0, 0, {}, null, 0],
+        [1, 1, 1, 0, 0, 0, 0, null, Number.NaN],
+    ])('throws an error calling constructor with year=%p, month=%p, day=%p, ' +
+       'hour=%p, minute=%p, second=%p, microsecond=%p, tzInfo=%p, fold=%p',
         (year, month, day, hour, minute, second, microsecond, tzInfo, fold) => {
             expect(() => new DateTime(
                 year, month, day, hour, minute, second, microsecond, tzInfo, fold
             )).toThrow(RangeDateTimeError);
-    });
+        }
+    );
 
     test.each([
         [new DateTime(3905, 4, 15, 9, 48, 30, 31803,

@@ -215,11 +215,12 @@ export class TimeDelta {
         seconds = mod
         days += div
 
-        if(days >= 1000000000 || days <= -1000000000)
+        if(!(-999999999 <= days && days <= 999999999)) {
             throw new ValueDateTimeError(
                 'Cannot handle duration greater than "TimeDelta.max" or ' +
                 'lesser than "TimeDelta.min".'
             );
+        }
 
         this._days = days
         this._seconds = seconds
@@ -309,14 +310,15 @@ export class Date {
      *                     and year.
      */
     constructor(year, month, day) {
-        if(year < MINYEAR || year > MAXYEAR)
+        if(!(MINYEAR <= year && year <= MAXYEAR))
             throw new ValueDateTimeError(
                 '"year" must be between "MINYEAR" and "MAXYEAR".')
-        if(month < 1 || month > 12)
+        if(!(1 <= month && month <= 12))
             throw new ValueDateTimeError('"month" must be between 1 and 12.')
-        if(day < 1 || day > (
-                isLeapYear(year) ?
-                leapedDaysPerMonth[month - 1] : daysPerMonth[month - 1]))
+        if(!(1 <= day && day <= (
+            isLeapYear(year) ?
+            leapedDaysPerMonth[month - 1] : daysPerMonth[month - 1]
+        )))
             throw new ValueDateTimeError('Invalid day for the year and month.')
 
         this._year = year
@@ -737,27 +739,32 @@ export class Time {
      * @param {number} fold 0 or 1.
      */
     constructor(hour=0, minute=0, second=0, microsecond=0, tzInfo=null, fold=0) {
-        if(hour < 0 || hour >= 24)
+        if(!(0 <= hour && hour <= 23))
             throw new ValueDateTimeError(
-                '"hour" must be between 0 and 23.')
-        if(minute < 0 || minute >= 60)
+                '"hour" must be between 0 and 23.'
+            );
+        if(!(0 <= minute && minute <= 59))
             throw new ValueDateTimeError(
-                '"minute" must be between 0 and 59.')
-        if(second < 0 || second >= 60)
+                '"minute" must be between 0 and 59.'
+            );
+        if(!(0 <= second && second <= 59))
             throw new ValueDateTimeError(
-                '"second" must be between 0 and 59.')
-        if(microsecond < 0 || microsecond >= 1000000)
+                '"second" must be between 0 and 59.'
+            );
+        if(!(0 <= microsecond && microsecond <= 999999))
             throw new ValueDateTimeError(
-                '"microsecond" must be between 0 and 999999.')
-        if(fold !== 0 && fold !== 1)
+                '"microsecond" must be between 0 and 999999.'
+            );
+        if(!(fold === 0 || fold === 1))
             throw new ValueDateTimeError(
-                '"fold" must be 0 or 1.')
-        this._hour = hour
-        this._minute = minute
-        this._second = second
-        this._microsecond = microsecond
-        this._tzInfo = tzInfo
-        this._fold = fold
+                '"fold" must be 0 or 1.'
+            );
+        this._hour = hour;
+        this._minute = minute;
+        this._second = second;
+        this._microsecond = microsecond;
+        this._tzInfo = tzInfo;
+        this._fold = fold;
     }
     /**
      * Between 0 and 23.
@@ -989,28 +996,33 @@ export class DateTime extends Date {
      */
     constructor(year, month, day, hour=0, minute=0, second=0, microsecond=0,
                 tzInfo=null, fold=0) {
-        super(year, month, day)
-        if(hour < 0 || hour >= 24)
+        super(year, month, day);
+        if(!(0 <= hour && hour <= 23))
             throw new ValueDateTimeError(
-                '"hour" must be between 0 and 23.')
-        if(minute < 0 || minute >= 60)
+                '"hour" must be between 0 and 23.'
+            );
+        if(!(0 <= minute && minute <= 59))
             throw new ValueDateTimeError(
-                '"minute" must be between 0 and 59.')
-        if(second < 0 || second >= 60)
+                '"minute" must be between 0 and 59.'
+            );
+        if(!(0 <= second && second <= 59))
             throw new ValueDateTimeError(
-                '"second" must be between 0 and 59.')
-        if(microsecond < 0 || microsecond >= 1000000)
+                '"second" must be between 0 and 59.'
+            );
+        if(!(0 <= microsecond && microsecond <= 999999))
             throw new ValueDateTimeError(
-                '"microsecond" must be between 0 and 999999.')
-        if(fold !== 0 && fold !== 1)
+                '"microsecond" must be between 0 and 999999.'
+            );
+        if(!(fold === 0 || fold === 1))
             throw new ValueDateTimeError(
-                '"fold" must be 0 or 1.')
-        this._hour = hour
-        this._minute = minute
-        this._second = second
-        this._microsecond = microsecond
-        this._tzInfo = tzInfo
-        this._fold = fold
+                '"fold" must be 0 or 1.'
+            );
+        this._hour = hour;
+        this._minute = minute;
+        this._second = second;
+        this._microsecond = microsecond;
+        this._tzInfo = tzInfo;
+        this._fold = fold;
     }
     /**
      * Between 0 and 23.
