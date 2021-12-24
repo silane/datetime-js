@@ -1,7 +1,7 @@
 import { diff } from 'jest-diff';
 import {
     MAXYEAR, MINYEAR, TimeDelta, Date, TimeZone, Time, DateTime, LOCALTZINFO,
-    neg, cmp, add, sub, dtexpr, ValueDateTimeError, RangeDateTimeError,
+    neg, cmp, add, sub, dtexpr, ValueDateTimeError,
     SyntaxDtexprDateTimeError, ExecutionDtexprDateTimeError,
 } from './src/index.js';
 
@@ -192,16 +192,18 @@ describe('TimeDelta', () => {
 
     test('throws an error constructing TimeDelta lesser than "min"', () => {
         const min = TimeDelta.min;
-        expect(() => new TimeDelta(
-            {days: min.days, seconds: min.seconds, microseconds: min.microseconds - 1}
-        )).toThrow(RangeDateTimeError);
+        expect(() => new TimeDelta({
+            days: min.days, seconds: min.seconds,
+            microseconds: min.microseconds - 1,
+        })).toThrow(ValueDateTimeError);
     });
 
     test('throws an error constructing TimeDelta greater than "max"', () => {
         const max = TimeDelta.max;
-        expect(() => new TimeDelta(
-            {days: max.days, seconds: max.seconds, microseconds: max.microseconds + 1}
-        )).toThrow(RangeDateTimeError);
+        expect(() => new TimeDelta({
+            days: max.days, seconds: max.seconds,
+            microseconds: max.microseconds + 1.
+        })).toThrow(ValueDateTimeError);
     });
 
     test('totalSeconds()', () => {
@@ -248,9 +250,9 @@ describe('Date', () => {
         [1, 1, undefined],
     ])(
         'throws an error calling constructor with year=%p, month=%p, day=%p',
-        (year, month, day) => {
-            expect(() => new Date(year, month, day)).toThrow(RangeDateTimeError);
-        }
+        (year, month, day) => { expect(
+            () => new Date(year, month, day)
+        ).toThrow(ValueDateTimeError); }
     );
 
     test.each([
@@ -398,15 +400,19 @@ describe('Date', () => {
 });
 
 describe('TimeZone', () => {
-    test('throws an error calling constructor with offset of 24 or greater hours', () => {
-        expect(() => new TimeZone(new TimeDelta({days: 1}))).toThrow(
-            RangeDateTimeError);
-    });
+    test(
+        'throws an error calling constructor with offset of 24 or greater hours',
+        () => { expect(
+            () => new TimeZone(new TimeDelta({days: 1}))
+        ).toThrow(ValueDateTimeError); }
+    );
 
-    test('throws an error calling constructor with offset of -24 or lesser hours', () => {
-        expect(() => new TimeZone(new TimeDelta({days: -1}))).toThrow(
-            RangeDateTimeError);
-    });
+    test(
+        'throws an error calling constructor with offset of -24 or lesser hours',
+        () => { expect(
+            () => new TimeZone(new TimeDelta({days: -1}))
+        ).toThrow(ValueDateTimeError); }
+    );
 
     test('utcOffset() and tzName()', () => {
         const offset = new TimeDelta({hours: -3, minutes: 12, seconds: 42});
@@ -473,11 +479,9 @@ describe('Time', () => {
         [0, 0, 0, 0, null, 'abc'],
     ])('throws an error calling constructor with hour=%p, minute=%p, ' +
        'second=%p, microsecond=%p, tzInfo=%p, fold=%p',
-        (hour, minute, second, microsecond, tzInfo, fold) => {
-            expect(() => new Time(
-                hour, minute, second, microsecond, tzInfo, fold
-            )).toThrow(RangeDateTimeError);
-        }
+        (hour, minute, second, microsecond, tzInfo, fold) => { expect(
+            () => new Time(hour, minute, second, microsecond, tzInfo, fold)
+        ).toThrow(ValueDateTimeError); }
     );
 
     test.each([
@@ -714,7 +718,7 @@ describe('DateTime', () => {
         (year, month, day, hour, minute, second, microsecond, tzInfo, fold) => {
             expect(() => new DateTime(
                 year, month, day, hour, minute, second, microsecond, tzInfo, fold
-            )).toThrow(RangeDateTimeError);
+            )).toThrow(ValueDateTimeError);
         }
     );
 
