@@ -33,14 +33,9 @@ const stdDate = globalThis.Date;
  * @param {number} millisecond
  */
 function safeStdDateUTC(year, month, day, hour, minute, second, millisecond) {
-    const d = new stdDate();
-    d.setUTCFullYear(year);
-    d.setUTCMonth(month - 1);
-    d.setUTCDate(day);
-    d.setUTCHours(hour);
-    d.setUTCMinutes(minute);
-    d.setUTCSeconds(second);
-    d.setUTCMilliseconds(millisecond);
+    const d = new stdDate(2000, 0, 1);
+    d.setUTCFullYear(year, month - 1, day);
+    d.setUTCHours(hour, minute, second, millisecond);
     return d;
 }
 
