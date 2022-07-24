@@ -8,6 +8,11 @@ import { DateTimeError, NotImplementedDateTimeError } from './errors.js';
  * Base exception of other exceptions raised in dtexpr.
  */
 export class DtexprDateTimeError extends DateTimeError {
+    /**
+     * @param {any[]} expression The expression caused this error.
+     * @param {[number, number]} pos Position of the error in the expression.
+     * @param {string} message Error message.
+     */
     constructor(expression, pos, message) {
         super(message);
         this.expression = expression;
@@ -35,6 +40,12 @@ export class SyntaxDtexprDateTimeError extends DtexprDateTimeError {
  * inappropriate type passed to an operator.
  */
 export class ExecutionDtexprDateTimeError extends DtexprDateTimeError {
+    /**
+     * @param {any[]} expression The expression caused this error.
+     * @param {[number, number]} pos Position of the error in the expression.
+     * @param {Error} originalError The original error object.
+     * @param {string} message Error message.
+     */
     constructor(expression, pos, originalError, message) {
         super(expression, pos, message);
         this.originalError = originalError;
@@ -195,7 +206,7 @@ class SubNode extends CommonBinaryNode {
 
 class ParsingStr {
     /**
-     * @param {((string|number|TimeDelta|Date|Time|DateTime)[])} s
+     * @param {(string|number|TimeDelta|Date|Time|DateTime)[]} s
      */
     constructor(s) {
         this.s = s;
