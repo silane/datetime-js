@@ -216,9 +216,20 @@ export class TimeDelta {
                 'lesser than "TimeDelta.min".'
             );
         }
-
+        /**
+         * @private
+         * @readonly
+         */
         this._days = days
+        /**
+         * @private
+         * @readonly
+         */
         this._seconds = seconds
+        /**
+         * @private
+         * @readonly
+         */
         this._microseconds = microseconds
     }
 
@@ -315,9 +326,20 @@ export class Date {
             leapedDaysPerMonth[month - 1] : daysPerMonth[month - 1]
         )))
             throw new ValueDateTimeError('Invalid day for the year and month.')
-
+        /**
+         * @private
+         * @readonly
+         */
         this._year = year
+        /**
+         * @private
+         * @readonly
+         */
         this._month = month
+        /**
+         * @private
+         * @readonly
+         */
         this._day = day
     }
 
@@ -622,7 +644,15 @@ export class TimeZone extends TZInfo {
                 name += toOffsetString(offset)
             }
         }
+        /**
+         * @private
+         * @readonly
+         */
         this._offset = offset
+        /**
+         * @private
+         * @readonly
+         */
         this._name = name
     }
     /**
@@ -686,6 +716,10 @@ export const LOCALTZINFO = new (class extends TZInfo {
         super()
         // Offset without DST
         const stdOffset = -new stdDate(2000, 0, 1).getTimezoneOffset()
+        /**
+         * @private
+         * @readonly
+         */
         this._stdOffset = new TimeDelta({minutes: stdOffset})
     }
     utcOffset(dt) {
@@ -754,11 +788,35 @@ export class Time {
             throw new ValueDateTimeError(
                 '"fold" must be 0 or 1.'
             );
+        /**
+         * @private
+         * @readonly
+         */
         this._hour = hour;
+        /**
+         * @private
+         * @readonly
+         */
         this._minute = minute;
+        /**
+         * @private
+         * @readonly
+         */
         this._second = second;
+        /**
+         * @private
+         * @readonly
+         */
         this._microsecond = microsecond;
+        /**
+         * @private
+         * @readonly
+         */
         this._tzInfo = tzInfo;
+        /**
+         * @private
+         * @readonly
+         */
         this._fold = fold;
     }
     /**
@@ -1012,11 +1070,35 @@ export class DateTime extends Date {
             throw new ValueDateTimeError(
                 '"fold" must be 0 or 1.'
             );
+        /**
+         * @private
+         * @readonly
+         */
         this._hour = hour;
+        /**
+         * @private
+         * @readonly
+         */
         this._minute = minute;
+        /**
+         * @private
+         * @readonly
+         */
         this._second = second;
+        /**
+         * @private
+         * @readonly
+         */
         this._microsecond = microsecond;
+        /**
+         * @private
+         * @readonly
+         */
         this._tzInfo = tzInfo;
+        /**
+         * @private
+         * @readonly
+         */
         this._fold = fold;
     }
     /**
