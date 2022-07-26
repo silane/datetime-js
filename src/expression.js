@@ -43,7 +43,7 @@ export class ExecutionDtexprDateTimeError extends DtexprDateTimeError {
     /**
      * @param {any[]} expression The expression caused this error.
      * @param {[number, number]} pos Position of the error in the expression.
-     * @param {Error} originalError The original error object.
+     * @param {?Error} originalError The original error object.
      * @param {string} message Error message.
      */
     constructor(expression, pos, originalError, message) {
@@ -206,7 +206,7 @@ class SubNode extends CommonBinaryNode {
 
 class ParsingStr {
     /**
-     * @param {(string|number|TimeDelta|Date|Time|DateTime)[]} s
+     * @param {(string|number|!TimeDelta|!Date|!Time|!DateTime)[]} s
      */
     constructor(s) {
         this.s = s;

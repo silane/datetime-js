@@ -285,20 +285,20 @@ export class TimeDelta {
 }
 /**
  * The most negative timedelta object, new TimeDelta({days: -999999999}).
- * @type {TimeDelta}
+ * @type {!TimeDelta}
  */
 TimeDelta.min = new TimeDelta({days: -999999999});
 /**
  * The most positive timedelta object, new TimeDelta({days: 999999999,
  * hours: 23, minutes: 59, seconds: 59, microseconds: 999999}).
- * @type {TimeDelta}
+ * @type {!TimeDelta}
  */
 TimeDelta.max = new TimeDelta({days: 999999999, hours: 23, minutes: 59,
                                seconds: 59, microseconds: 999999});
 /**
  * The smallest possible difference between non-equal timedelta objects,
  * new TimeDelta({microseconds: 1}).
- * @type {TimeDelta}
+ * @type {!TimeDelta}
 */
 TimeDelta.resolution = new TimeDelta({microseconds: 1});
 
@@ -360,10 +360,10 @@ export class Date {
     get day() { return this._day }
     /**
      * Return the Date corresponding to the given standard library Date object.
-     * @param {stdDate} d The standard library Date object.
+     * @param {!stdDate} d The standard library Date object.
      * @param {boolean} utc If true, use getUTC***() instead of get***()
      *                      to construct Date.
-     * @returns {Date}
+     * @returns {!Date}
      */
     static fromStdDate(d, utc=false) {
         if(!utc)
@@ -375,7 +375,7 @@ export class Date {
     }
     /**
      * Return the current local date.
-     * @returns {Date}
+     * @returns {!Date}
      */
     static today() {
         const today = new stdDate()
@@ -385,7 +385,7 @@ export class Date {
      * Return the Date corresponding to the proleptic Gregorian ordinal, where
      * January 1 of year 1 has ordinal 1.
      * @param {number} ordinal The proleptic Gregorian ordinal.
-     * @returns {Date}
+     * @returns {!Date}
      */
     static fromOrdinal(ordinal) {
         let q, r;
@@ -417,7 +417,7 @@ export class Date {
      * Return a Date corresponding to a dateString given in the format
      * `YYYY-MM-DD` or `YYYYMMDD`.
      * @param {string} dateString The date string.
-     * @returns {Date}
+     * @returns {!Date}
      */
     static fromISOFormat(dateString) {
         let match = (/^(\d\d\d\d)-(\d\d)-(\d\d)$/.exec(dateString) ||
@@ -432,7 +432,7 @@ export class Date {
      * Return a standard library Date object corresponding to this Date.
      * @param {boolean} utc If true, the value of getUTC***(), instead of
      *                      get***(), will correspond to this Date.
-     * @returns {stdDate}
+     * @returns {!stdDate}
      */
     toStdDate(utc=false) {
         let ret;
@@ -452,7 +452,7 @@ export class Date {
      * @param {number} [newValues.year]
      * @param {number} [newValues.month]
      * @param {number} [newValues.day]
-     * @returns {Date}
+     * @returns {!Date}
      */
     replace({ year=this.year, month=this.month, day=this.day }) {
         return new Date(year, month, day);
@@ -524,18 +524,18 @@ export class Date {
 }
 /**
  * The earliest representable date, new Date(MINYEAR, 1, 1).
- * @type {Date}
+ * @type {!Date}
  */
 Date.min = new Date(MINYEAR, 1, 1);
 /**
  * The latest representable date, new Date(MAXYEAR, 12, 31).
- * @type {Date}
+ * @type {!Date}
  */
 Date.max = new Date(MAXYEAR, 12, 31);
 /**
  * The smallest possible difference between non-equal date objects,
  * new TimeDelta({days: 1}).
- * @type {TimeDelta}
+ * @type {!TimeDelta}
  */
 Date.resolution = new TimeDelta({days: 1});
 
@@ -552,17 +552,17 @@ export class TZInfo {
      * Return offset of local time from UTC, as a TimeDelta object that is
      * positive east of UTC. If local time is west of UTC, this should be
      * negative.
-     * @param {DateTime} dt The DateTime object.
-     * @returns {TimeDelta}
+     * @param {?DateTime} dt The DateTime object.
+     * @returns {?TimeDelta}
      */
     utcOffset(dt) {
         throw new NotImplementedDateTimeError()
     }
     /**
      * Return the daylight saving time (DST) adjustment, as a TimeDelta object
-     * or None if DST information isn’t known.
-     * @param {DateTime} dt The DateTime object.
-     * @returns {TimeDelta}
+     * or null if DST information isn’t known.
+     * @param {?DateTime} dt The DateTime object.
+     * @returns {?TimeDelta}
      */
     dst(dt) {
         throw new NotImplementedDateTimeError()
@@ -570,8 +570,8 @@ export class TZInfo {
     /**
      * Return the time zone name corresponding to the datetime object dt, as a
      * string.
-     * @param {DateTime} dt The DateTime object.
-     * @returns {string}
+     * @param {?DateTime} dt The DateTime object.
+     * @returns {?string}
      */
     tzName(dt) {
         throw new NotImplementedDateTimeError()
@@ -582,8 +582,8 @@ export class TZInfo {
      * to be viewed as expressing a UTC time. The purpose of fromutc() is to
      * adjust the date and time data, returning an equivalent datetime in self’s
      * local time.
-     * @param {DateTime} dt The DateTime object.
-     * @returns {DateTime}
+     * @param {!DateTime} dt The DateTime object.
+     * @returns {!DateTime}
      */
     fromUTC(dt) {
         if(dt.tzInfo !== this) {
@@ -621,14 +621,14 @@ export class TZInfo {
 export class TimeZone extends TZInfo {
     /**
      *
-     * @param {TimeDelta} offset Represents the difference between the local
-     *                           time and UTC. It must be strictly between
-     *                           -TimeDelta({hours: 24}) and
-     *                           TimeDelta({hours: 24}), otherwise
-     *                           ValueDateTimeError is raised.
-     * @param {string} name If specified, it must be a string that will be used
-     *                      as the value returned by the DateTime.tzname()
-     *                      method.
+     * @param {!TimeDelta} offset Represents the difference between the local
+     *                            time and UTC. It must be strictly between
+     *                            -TimeDelta({hours: 24}) and
+     *                            TimeDelta({hours: 24}), otherwise
+     *                            ValueDateTimeError is raised.
+     * @param {?string} name If specified, it must be a string that will be used
+     *                       as the value returned by the DateTime.tzname()
+     *                       method.
      */
     constructor(offset, name=null) {
         super()
@@ -658,8 +658,8 @@ export class TimeZone extends TZInfo {
     /**
      * Return the fixed value specified when the TimeZone instance is
      * constructed.
-     * @param {DateTime} dt This argument is ignored.
-     * @returns {TimeDelta}
+     * @param {?DateTime} dt This argument is ignored.
+     * @returns {!TimeDelta}
      */
     utcOffset(dt) {
         return this._offset
@@ -672,7 +672,7 @@ export class TimeZone extends TZInfo {
      * If offset is TimeDelta({}), the name is “UTC”, otherwise it is a string
      * in the format UTC±HH:MM, where ± is the sign of offset, HH and MM are two
      * digits of offset.hours and offset.minutes respectively.
-     * @param {DateTime} dt This argument is ignored.
+     * @param {?DateTime} dt This argument is ignored.
      * @returns {string}
      */
     tzName(dt) {
@@ -680,7 +680,7 @@ export class TimeZone extends TZInfo {
     }
     /**
      * Always returns null.
-     * @param {DateTime} dt This argument is ignored.
+     * @param {?DateTime} dt This argument is ignored.
      * @returns {null}
      */
     dst(dt) {
@@ -689,8 +689,8 @@ export class TimeZone extends TZInfo {
     /**
      * Return add(dt, offset). The dt argument must be an aware datetime
      * instance, with tzInfo set to this.
-     * @param {DateTime} dt The DateTime object.
-     * @returns {DateTime}
+     * @param {!DateTime} dt The DateTime object.
+     * @returns {!DateTime}
      */
     fromUTC(dt) {
         if(dt.tzInfo !== this) {
@@ -702,7 +702,7 @@ export class TimeZone extends TZInfo {
 }
 /**
  * The UTC timezone, new TimeZone(new TimeDelta({})).
- * @type {TimeZone}
+ * @type {!TimeZone}
  */
 TimeZone.utc =  new TimeZone(new TimeDelta({}));
 
@@ -764,7 +764,7 @@ export class Time {
      * @param {number} minute Between 0 and 59.
      * @param {number} second Between 0 and 59.
      * @param {number} microsecond Between 0 and 999999.
-     * @param {TZInfo} tzInfo The timezone information.
+     * @param {?TZInfo} tzInfo The timezone information.
      * @param {number} fold 0 or 1.
      */
     constructor(hour=0, minute=0, second=0, microsecond=0, tzInfo=null, fold=0) {
@@ -842,7 +842,7 @@ export class Time {
     /**
      * The object passed as the tzInfo argument to the Time constructor, or null
      * if none was passed.
-     * @type {TZInfo}
+     * @type {?TZInfo}
      */
     get tzInfo() { return this._tzInfo }
     /**
@@ -860,7 +860,7 @@ export class Time {
      * `HH[MM[SS[.fff[fff]]]][Z|((+|-)HH[MM[SS[.fff[fff]]]])]`.
 
      * @param {string} timeString The time string.
-     * @returns {Time}
+     * @returns {!Time}
      */
     static fromISOFormat(timeString) {
         function parseTimeString(str) {
@@ -921,9 +921,9 @@ export class Time {
      * @param {number} [newValues.minute]
      * @param {number} [newValues.second]
      * @param {number} [newValues.microsecond]
-     * @param {TZInfo} [newValues.tzInfo]
+     * @param {?TZInfo} [newValues.tzInfo]
      * @param {number} [newValues.fold]
-     * @returns {Time}
+     * @returns {!Time}
      */
     replace({ hour=this.hour, minute=this.minute, second=this.second,
               microsecond=this.microsecond, tzInfo=this.tzInfo,
@@ -1011,19 +1011,19 @@ export class Time {
 }
 /**
  * The earliest representable time, new Time(0, 0, 0, 0).
- * @type {Time}
+ * @type {!Time}
  */
 Time.min = new Time(0, 0, 0, 0);
 /**
  * The latest representable time, new Time(23, 59, 59, 999999).
- * @type {Time}
+ * @type {!Time}
  */
 Time.max = new Time(23, 59, 59, 999999);
 /**
  * The smallest possible difference between non-equal time objects,
  * new TimeDelta({microseconds: 1}), although note that arithmetic on time
  * objects is not supported.
- * @type {TimeDelta}
+ * @type {!TimeDelta}
  */
 Time.resolution = new TimeDelta({microseconds: 1});
 
@@ -1044,7 +1044,7 @@ export class DateTime extends Date {
      * @param {number} minute Between 0 and 59.
      * @param {number} second Between 0 and 59.
      * @param {number} microsecond Between 0 and 999999.
-     * @param {TZInfo} tzInfo The timezone information.
+     * @param {?TZInfo} tzInfo The timezone information.
      * @param {number} fold 0 or 1.
      */
     constructor(year, month, day, hour=0, minute=0, second=0, microsecond=0,
@@ -1124,7 +1124,7 @@ export class DateTime extends Date {
     /**
      * The object passed as the tzInfo argument to the Time constructor, or null
      * if none was passed.
-     * @type {TZInfo}
+     * @type {?TZInfo}
      */
     get tzInfo() { return this._tzInfo }
     /**
@@ -1138,10 +1138,10 @@ export class DateTime extends Date {
     get fold() { return this._fold }
     /**
      * Return a DateTime corresponding to the given standard library Date object.
-     * @param {stdDate} d The standard library Date object.
+     * @param {!stdDate} d The standard library Date object.
      * @param {boolean} utc If true, use getUTC***() instead of get***()
      *                      to construct DateTime.
-     * @returns {DateTime}
+     * @returns {!DateTime}
      */
     static fromStdDate(d, utc=false) {
         if(!utc)
@@ -1157,16 +1157,16 @@ export class DateTime extends Date {
     }
     /**
      * Return the current local date and time, with tzInfo null.
-     * @returns {DateTime}
+     * @returns {!DateTime}
      */
     static today() {
         return DateTime.fromStdDate(new stdDate())
     }
     /**
      * Return the current date and time.
-     * @param {TZInfo} tz If specified, the current date and time are converted
-     *                    to tz's time zone, else same as today().
-     * @returns {DateTime}
+     * @param {?TZInfo} tz If specified, the current date and time are converted
+     *                     to tz's time zone, else same as today().
+     * @returns {!DateTime}
      */
     static now(tz=null) {
         if(tz == null)
@@ -1175,7 +1175,7 @@ export class DateTime extends Date {
     }
     /**
      * Return the current UTC date and time, with tzInfo null.
-     * @returns {DateTime}
+     * @returns {!DateTime}
      */
     static utcNow() {
         return DateTime.fromStdDate(new stdDate(), true)
@@ -1183,11 +1183,11 @@ export class DateTime extends Date {
     /**
      * Return the local date and time corresponding to the POSIX timestamp.
      * @param {number} timeStamp The POSIX timestamp.
-     * @param {TZInfo} tz If null, the timestamp is converted to the
-     *                    platform's local date and time, and the returned
-     *                    DateTime object is naive. If not null, the timestamp
-     *                    is converted to tz's time zone.
-     * @returns {DateTime}
+     * @param {?TZInfo} tz If null, the timestamp is converted to the platform's
+     *                     local date and time, and the returned DateTime object
+     *                     is naive. If not null, the timestamp is converted to
+     *                     tz's time zone.
+     * @returns {!DateTime}
      */
     static fromTimeStamp(timeStamp, tz=null) {
         if(tz == null)
@@ -1199,7 +1199,7 @@ export class DateTime extends Date {
      * Return the UTC date and time corresponding to the POSIX timestamp, with
      * tzInfo null. (The resulting object is naive.)
      * @param {number} timeStamp The POSIX timestamp.
-     * @returns {DateTime}
+     * @returns {!DateTime}
      */
     static utcFromTimeStamp(timeStamp) {
         return DateTime.fromStdDate(new stdDate(timeStamp * 1000), true)
@@ -1210,10 +1210,10 @@ export class DateTime extends Date {
      * object’s. If the tzInfo argument is provided, its value is used to set
      * the tzInfo attribute of the result, otherwise the tzInfo attribute of the
      * time argument is used.
-     * @param {Date} date The Date object.
-     * @param {Time} time The Time object.
-     * @param {TZInfo} tzInfo The TZInfo object.
-     * @returns {DateTime}
+     * @param {!Date} date The Date object.
+     * @param {!Time} time The Time object.
+     * @param {?TZInfo} [tzInfo] The TZInfo object.
+     * @returns {!DateTime}
      */
     static combine(date, time, tzInfo=undefined) {
         if(tzInfo === undefined)
@@ -1245,7 +1245,7 @@ export class DateTime extends Date {
      * microsecond value is truncated.
      * @param {boolean} utc If true, the value of getUTC***(), instead of
      *                      get***(), will correspond to this Date.
-     * @returns {stdDate}
+     * @returns {!stdDate}
      */
     toStdDate(utc=false) {
         let ret;
@@ -1264,7 +1264,7 @@ export class DateTime extends Date {
     }
     /**
      * Return Date object with same year, month and day.
-     * @returns {Date}
+     * @returns {!Date}
      */
     date() {
         return new Date(this.year, this.month, this.day)
@@ -1272,7 +1272,7 @@ export class DateTime extends Date {
     /**
      * Return Time object with same hour, minute, second, microsecond and fold.
      * tzInfo is null.
-     * @returns {Time}
+     * @returns {!Time}
      */
     time() {
         return new Time(this.hour, this.minute, this.second, this.microsecond,
@@ -1281,7 +1281,7 @@ export class DateTime extends Date {
     /**
      * Return Time object with same hour, minute, second, microsecond, fold, and
      * tzInfo attributes.
-     * @returns {Time}
+     * @returns {!Time}
      */
     timetz() {
         return new Time(this.hour, this.minute, this.second, this.microsecond,
@@ -1300,9 +1300,9 @@ export class DateTime extends Date {
      * @param {number} [newValues.minute]
      * @param {number} [newValues.second]
      * @param {number} [newValues.microsecond]
-     * @param {TZInfo} [newValues.tzInfo]
+     * @param {?TZInfo} [newValues.tzInfo]
      * @param {number} [newValues.fold]
-     * @returns {DateTime}
+     * @returns {!DateTime}
      */
     replace({
         year=this.year, month=this.month, day=this.day, hour=this.hour,
@@ -1317,9 +1317,9 @@ export class DateTime extends Date {
      * and time data so the result is the same UTC time as self, but in tz’s
      * local time.
      * If self is naive, it is presumed to represent time in the system timezone.
-     * @param {TZInfo} tz The target timezone. If null, the system local
-     *                    timezone is assumed for the target timezone.
-     * @returns {DateTime}
+     * @param {?TZInfo} tz The target timezone. If null, the system local
+     *                     timezone is assumed for the target timezone.
+     * @returns {!DateTime}
      */
     asTimeZone(tz=null) {
         if(this.tzInfo === tz) return this
@@ -1408,19 +1408,19 @@ export class DateTime extends Date {
 }
 /**
  * The earliest representable DateTime, new DateTime(MINYEAR, 1, 1).
- * @type {DateTime}
+ * @type {!DateTime}
  */
 DateTime.min = new DateTime(MINYEAR, 1, 1)
 /**
  * The latest representable DateTime, new DateTime(MAXYEAR, 12, 31, 23, 59, 59,
  * 999999).
- * @type {DateTime}
+ * @type {!DateTime}
  */
 DateTime.max = new DateTime(MAXYEAR, 12, 31, 23, 59, 59, 999999);
 /**
  * The smallest possible difference between non-equal DateTime objects,
  * new TimeDelta({microseconds: 1}).
- * @type {TimeDelta}
+ * @type {!TimeDelta}
  */
 DateTime.resolution = new TimeDelta({microseconds: 1});
 
