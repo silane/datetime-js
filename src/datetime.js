@@ -176,14 +176,14 @@ function strftime(dt, format) {
  */
 export class TimeDelta {
     /**
-     * @param {Object} duration An object consisting of duration values.
-     * @param {number} duration.days
-     * @param {number} duration.seconds
-     * @param {number} duration.microseconds
-     * @param {number} duration.milliseconds
-     * @param {number} duration.minutes
-     * @param {number} duration.hours
-     * @param {number} duration.weeks
+     * @param {Object} [duration] An object consisting of duration values.
+     * @param {number} [duration.days]
+     * @param {number} [duration.seconds]
+     * @param {number} [duration.microseconds]
+     * @param {number} [duration.milliseconds]
+     * @param {number} [duration.minutes]
+     * @param {number} [duration.hours]
+     * @param {number} [duration.weeks]
      */
     constructor({
             days=0, seconds=0, microseconds=0,
