@@ -599,7 +599,7 @@ export class TZInfo {
         const delta = sub(dtoff, dtdst)
         if(cmp(delta, new TimeDelta()) !== 0) {
             dt = add(dt, delta)
-            dtdst = td.dst()
+            dtdst = dt.dst()
         }
         if(dtdst == null)
             return dt
