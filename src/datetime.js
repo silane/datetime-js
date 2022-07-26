@@ -972,21 +972,21 @@ export class Time {
     }
     /**
      * If tzInfo is null, returns null, else returns this.tzInfo.utcOffset(null).
-     * @returns {(TimeDelta|null)}
+     * @returns {?TimeDelta}
      */
     utcOffset() {
         return this.tzInfo == null ? null : this.tzInfo.utcOffset(null)
     }
     /**
      * If tzInfo is null, returns null, else returns this.tzInfo.dst(null).
-     * @returns {(TimeDelta|null)}
+     * @returns {?TimeDelta}
      */
     dst() {
         return this.tzInfo == null ? null : this.tzInfo.dst(null)
     }
     /**
      * If tzInfo is null, returns null, else returns this.tzInfo.tzName(null).
-     * @returns {(string|null)}
+     * @returns {?string}
      */
     tzName() {
         return this.tzInfo == null ? null : this.tzInfo.tzName(null)
@@ -1339,21 +1339,21 @@ export class DateTime extends Date {
     }
     /**
      * If tzInfo is null, returns null, else returns this.tzInfo.utcOffset(this).
-     * @returns {(TimeDelta|null)}
+     * @returns {?TimeDelta}
      */
     utcOffset() {
         return this.tzInfo == null ? null : this.tzInfo.utcOffset(this)
     }
     /**
      * If tzInfo is null, returns null, else returns this.tzInfo.dst(this).
-     * @returns {(TimeDelta|null)}
+     * @returns {?TimeDelta}
      */
     dst() {
         return this.tzInfo == null ? null : this.tzInfo.dst(this)
     }
     /**
      * If tzInfo is null, returns null, else returns this.tzInfo.tzName(this).
-     * @returns {(string|null)}
+     * @returns {?string}
      */
     tzName() {
         return this.tzInfo == null ? null : this.tzInfo.tzName(this)
