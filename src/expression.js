@@ -9,7 +9,7 @@ import { DateTimeError, NotImplementedDateTimeError } from './errors.js';
  */
 export class DtexprDateTimeError extends DateTimeError {
     /**
-     * @param {any[]} expression The expression caused this error.
+     * @param {*[]} expression The expression caused this error.
      * @param {[number, number]} pos Position of the error in the expression.
      * @param {string} message Error message.
      */
@@ -41,7 +41,7 @@ export class SyntaxDtexprDateTimeError extends DtexprDateTimeError {
  */
 export class ExecutionDtexprDateTimeError extends DtexprDateTimeError {
     /**
-     * @param {any[]} expression The expression caused this error.
+     * @param {*[]} expression The expression caused this error.
      * @param {[number, number]} pos Position of the error in the expression.
      * @param {?Error} originalError The original error object.
      * @param {string} message Error message.
@@ -363,7 +363,7 @@ const expressionCache = [];
 /**
  * Tagged template function to perform operations on datetime objects.
  * @param {string[]} strings Strings to be passed by tagged template.
- * @param  {...any} values Values to be passed by tagged template.
+ * @param  {...*} values Values to be passed by tagged template.
  */
 export function dtexpr(strings, ...values) {
     const variables = values.map((x, i) => [new Variable(`var_${i}`), x]);
