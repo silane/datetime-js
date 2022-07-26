@@ -1227,6 +1227,7 @@ export class DateTime extends Date {
      * Return a DateTime corresponding to a dateString in one of the formats
      * emitted by Date.isoFormat() and DateTime.isoFormat().
      * @param {string} dateString The date string.
+     * @returns {!DateTime}
      */
     static fromISOFormat(dateString) {
         let sepIdx = dateString.search(/[^\d\-]/);
