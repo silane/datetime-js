@@ -51,8 +51,12 @@ export class ExecutionDtexprDateTimeError extends DtexprDateTimeError {
         this.originalError = originalError;
     }
     toString() {
-        return `${super.toString()}
+        if(this.originalError) {
+            return `${super.toString()}
 Original Error: ${this.originalError}`;
+        } else {
+            return super.toString();
+        }
     }
 }
 
