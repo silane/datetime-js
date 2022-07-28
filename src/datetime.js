@@ -708,10 +708,9 @@ TimeZone.utc =  new TimeZone(new TimeDelta({}));
 
 
 /**
- * Instance of a class which is subclass of TZInfo, representing local timezone
- * of the execution environment.
+ * A subclass of TZInfo representing local timezone of execution environment.
  */
-export const LOCALTZINFO = new (class extends TZInfo {
+class LocalTZInfo extends TZInfo {
     constructor() {
         super()
         // Offset without DST
@@ -749,7 +748,12 @@ export const LOCALTZINFO = new (class extends TZInfo {
             microsecond: dt.microsecond, tzInfo: this, fold: 0})
         return local
     }
-})()
+}
+/**
+ * An instance of a class which is a subclass of TZInfo representing local
+ * timezone of execution environment.
+ */
+export const LOCALTZINFO = new LocalTZInfo()
 
 
 /**
