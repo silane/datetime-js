@@ -721,6 +721,12 @@ class LocalTZInfo extends TZInfo {
          */
         this._stdOffset = new TimeDelta({minutes: stdOffset})
     }
+    /**
+     * Return offset of local time from UTC, as a TimeDelta object that is
+     * positive east of UTC. If local time is west of UTC, this is negative.
+     * @param {?DateTime} dt The DateTime object.
+     * @returns {!TimeDelta}
+     */
     utcOffset(dt) {
         if(dt == null)
             return this._stdOffset
@@ -728,6 +734,11 @@ class LocalTZInfo extends TZInfo {
 
         return new TimeDelta({minutes: offset})
     }
+    /**
+     * Return the daylight saving time (DST) adjustment as a TimeDelta object.
+     * @param {?DateTime} dt The DateTime object.
+     * @returns {!TimeDelta}
+     */
     dst(dt) {
         if(dt == null)
             return new TimeDelta()
@@ -735,10 +746,25 @@ class LocalTZInfo extends TZInfo {
         offset = new TimeDelta({minutes: offset})
         return sub(offset, this._stdOffset)
     }
+    /**
+     * Return the time zone name corresponding to the datetime object dt, as a
+     * string.
+     * @param {?DateTime} dt The DateTime object.
+     * @returns {string}
+     */
     tzName(dt) {
         const offset = this.utcOffset(dt)
         return toOffsetString(offset)
     }
+    /**
+     * This is called from the default datetime.astimezone() implementation.
+     * When called from that, dt.tzinfo is self, and dt’s date and time data are
+     * to be viewed as expressing a UTC time. The purpose of fromutc() is to
+     * adjust the date and time data, returning an equivalent datetime in self’s
+     * local time.
+     * @param {!DateTime} dt The DateTime object.
+     * @returns {!DateTime}
+     */
     fromUTC(dt) {
         if(dt.tzInfo !== this)
             throw new ValueDateTimeError(
