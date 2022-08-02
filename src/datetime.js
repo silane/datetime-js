@@ -13,6 +13,7 @@ export const MINYEAR = 1
 export const MAXYEAR = 9999
 
 
+/** @typedef {globalThis.Date} stdDate */
 const stdDate = globalThis.Date;
 
 
@@ -742,8 +743,8 @@ class LocalTZInfo extends TZInfo {
     dst(dt) {
         if(dt == null)
             return new TimeDelta()
-        let offset = -dt.toStdDate(false).getTimezoneOffset()
-        offset = new TimeDelta({minutes: offset})
+        const offsetMinutes = -dt.toStdDate(false).getTimezoneOffset()
+        const offset = new TimeDelta({minutes: offsetMinutes})
         return sub(offset, this._stdOffset)
     }
     /**
@@ -1359,7 +1360,7 @@ export class DateTime extends Date {
         let utc
         if(offset == null) {
             const local = this.replace({tzInfo: LOCALTZINFO});
-            utc = sub(local, local.utcOffset())
+            utc = sub(local, /** @type {TimeDelta} */(local.utcOffset()))
         } else {
             utc = sub(this, offset)
         }
@@ -1393,6 +1394,7 @@ export class DateTime extends Date {
      * @returns {number}
      */
     timeStamp() {
+        /** @type {DateTime} */
         let dt = this
         if(this.utcOffset() == null) {
             dt = this.replace({tzInfo: LOCALTZINFO})
@@ -1466,13 +1468,15 @@ function typeName(obj) {
     }
 }
 
+
 /**
  * Add two datetime objects.
- * @param {(TimeDelta|DateTime|Date|Time)} a Left side value.
- * @param {(TimeDelta|DateTime|Date|Time)} b Right side value.
- * @returns {(TimeDelta|DateTime|Date|Time)}
  */
-export function add(a, b) {
+export const add =
+/**
+ * @type {(function(TimeDelta, TimeDelta): TimeDelta)&(function(DateTime, TimeDelta): DateTime)&(function(Date, TimeDelta): Date)&(function(Time, TimeDelta): Time)}
+ */
+(function add(a, b) {
     function date_plus_timedelta(d, td) {
         d = d.toStdDate()
         d.setDate(d.getDate() + td.days)
@@ -1533,16 +1537,17 @@ export function add(a, b) {
     }
     throw new TypeDateTimeError(
         `Cannot add type "${typeName(a)}" and type "${typeName(b)}".`)
-}
+})
 
 
 /**
  * Subtract two datetime objects.
- * @param {(TimeDelta|DateTime|Date|Time)} a Left side value.
- * @param {(TimeDelta|DateTime|Date|Time)} b Right side value.
- * @returns {(TimeDelta|DateTime|Date|Time)}
  */
-export function sub(a, b) {
+export const sub =
+/**
+ * @type {(function(TimeDelta, TimeDelta): TimeDelta)&(function(DateTime, TimeDelta): DateTime)&(function(DateTime, DateTime): TimeDelta)&(function(Date, TimeDelta): Date)&(function(Date, Date): TimeDelta)&(function(Time, TimeDelta): Time)&(function(Time, Time): TimeDelta)}
+ */
+(function (a, b) {
     if(a instanceof TimeDelta && b instanceof TimeDelta) {
         return new TimeDelta({
             days: a.days - b.days,
@@ -1617,7 +1622,7 @@ export function sub(a, b) {
     }
     throw new TypeDateTimeError(
         `Cannnot subtract type "${typeName(b)}" from type "${typeName(a)}".`)
-}
+})
 
 
 /**
@@ -1641,8 +1646,9 @@ export function neg(a) {
  * Compare two datetime objects.
  * Return 0 if two are the same, 1 if left side is greater than right,
  * -1 if right side is greater than left.
- * @param {(TimeDelta|DateTime|Date|Time)} a Left side value.
- * @param {(TimeDelta|DateTime|Date|Time)} b Right side value.
+ * @template {(!TimeDelta|!DateTime|!Date|!Time)} T
+ * @param {T} a Left side value.
+ * @param {T} b Right side value.
  * @returns {number}
  */
 export function cmp(a, b) {
@@ -1662,32 +1668,35 @@ export function cmp(a, b) {
         return c
     }
     if(a instanceof DateTime && b instanceof DateTime) {
-        const aOffset = a.utcOffset()
-        const bOffset = b.utcOffset()
+        /** @type {DateTime} */
+        let ta = a;
+        /** @type {DateTime} */
+        let tb = b;
+        const aOffset = ta.utcOffset(), bOffset = tb.utcOffset()
         if(!(aOffset == null && bOffset == null) &&
-           a.tzInfo !== b.tzInfo) {
+           ta.tzInfo !== tb.tzInfo) {
             if(aOffset == null || bOffset == null)
                 throw new TypeDateTimeError(
                     'Cannot compare naive "DateTime" to aware "DateTime"')
-            a = sub(a, aOffset)
-            b = sub(b, bOffset)
+            ta = sub(ta, aOffset)
+            tb = sub(tb, bOffset)
         }
 
-        let c = _comp(a.year, b.year)
+        let c = _comp(ta.year, tb.year)
         if(c) return c
-        c = _comp(a.month, b.month)
+        c = _comp(ta.month, tb.month)
         if(c) return c
-        c = _comp(a.day, b.day)
+        c = _comp(ta.day, tb.day)
         if(c) return c
-        c = _comp(a.hour, b.hour)
+        c = _comp(ta.hour, tb.hour)
         if(c) return c
-        c = _comp(a.minute, b.minute)
+        c = _comp(ta.minute, tb.minute)
         if(c) return c
-        c = _comp(a.second, b.second)
+        c = _comp(ta.second, tb.second)
         if(c) return c
-        c = _comp(a.microsecond, b.microsecond)
+        c = _comp(ta.microsecond, tb.microsecond)
         if(c) return c
-        c = _comp(a.fold, b.fold)
+        c = _comp(ta.fold, tb.fold)
         return c
     }
     if(a instanceof Date && b instanceof Date) {
@@ -1695,26 +1704,29 @@ export function cmp(a, b) {
     }
 
     if(a instanceof Time && b instanceof Time) {
-        const aOffset = a.utcOffset()
-        const bOffset = b.utcOffset()
+        /** @type {Time} */
+        let ta = a;
+        /** @type {Time} */
+        let tb = b;
+        const aOffset = ta.utcOffset(), bOffset = tb.utcOffset()
         if(!(aOffset == null && bOffset == null) &&
-           a.tzInfo !== b.tzInfo) {
+           ta.tzInfo !== tb.tzInfo) {
             if(aOffset == null || bOffset == null)
                 throw new TypeDateTimeError(
                     'Cannot compare naive "Time" object to aware "Time" object')
-            a = sub(a, aOffset)
-            b = sub(b, bOffset)
+            ta = sub(ta, aOffset)
+            tb = sub(tb, bOffset)
         }
 
-        let c = _comp(a.hour, b.hour)
+        let c = _comp(ta.hour, tb.hour)
         if(c) return c
-        c = _comp(a.minute, b.minute)
+        c = _comp(ta.minute, tb.minute)
         if(c) return c
-        c = _comp(a.second, b.second)
+        c = _comp(ta.second, tb.second)
         if(c) return c
-        c = _comp(a.microsecond, b.microsecond)
+        c = _comp(ta.microsecond, tb.microsecond)
         if(c) return c
-        c = _comp(a.fold, b.fold)
+        c = _comp(ta.fold, tb.fold)
         return c
     }
     throw new TypeDateTimeError(

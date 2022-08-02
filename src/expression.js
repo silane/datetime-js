@@ -85,7 +85,7 @@ class VariableNode extends Node {
             return context.variables[this.variableName];
         } else {
             throw new ExecutionDtexprDateTimeError(
-                null, this.pos, null,
+                [], this.pos, null,
                 `Varibale "${this.variableName}" is not defined in the execution context`,
             );
         }
@@ -104,7 +104,7 @@ class NegNode extends Node {
         } catch(e) {
             if(e instanceof DateTimeError) {
                 throw new ExecutionDtexprDateTimeError(
-                    null, this.pos, e, 'Execution error in negation operator.'
+                    [], this.pos, e, 'Execution error in negation operator.'
                 );
             }
             throw e;
@@ -120,6 +120,7 @@ class BinaryNode extends Node {
     }
 }
 class CommonBinaryNode extends BinaryNode {
+    /** @type {string} */
     get operatorName() {
         throw new NotImplementedDateTimeError();
     }
@@ -134,7 +135,7 @@ class CommonBinaryNode extends BinaryNode {
         } catch(e) {
             if(e instanceof DateTimeError) {
                 throw new ExecutionDtexprDateTimeError(
-                    null, this.pos, e,
+                    [], this.pos, e,
                     `Execution error in ${this.operatorName} operator.`,
                 );
             }
@@ -218,10 +219,11 @@ class ParsingStr {
         this.pos2 = 0;
     }
     consumeIf(startstr) {
-        if(typeof this.s[this.pos1] === 'string') {
-            if(this.s[this.pos1].slice(this.pos2).startsWith(startstr)) {
+        const item = this.s[this.pos1];
+        if(typeof item === 'string') {
+            if(item.slice(this.pos2).startsWith(startstr)) {
                 this.pos2 += startstr.length;
-                if(this.pos2 >= this.s[this.pos1].length) {
+                if(this.pos2 >= item.length) {
                     ++this.pos1;
                     this.pos2 = 0;
                 }
@@ -234,15 +236,16 @@ class ParsingStr {
         }
     }
     consumeWhile(chars) {
-        if(typeof this.s[this.pos1] === 'string') {
+        const item = this.s[this.pos1];
+        if(typeof item === 'string') {
             let ret = '';
-            for(; this.pos2 < this.s[this.pos1].length; ++this.pos2) {
+            for(; this.pos2 < item.length; ++this.pos2) {
                 if(chars.includes(this.s[this.pos1][this.pos2]))
                     ret += this.s[this.pos1][this.pos2];
                 else
                     break;
             }
-            if(this.pos2 >= this.s[this.pos1].length) {
+            if(this.pos2 >= item.length) {
                 ++this.pos1;
                 this.pos2 = 0;
             }
@@ -334,6 +337,7 @@ function negterm(s) {
 
 function realexpr(s) {
     whitespace(s);
+    /** @type {[number, number]} */
     const pos = [s.pos1, s.pos2];
     if(s.consumeIf('(')) {
         whitespace(s);
