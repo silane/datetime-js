@@ -1124,8 +1124,7 @@ export class Time {
     }
     /**
      * The smallest possible difference between non-equal time objects,
-     * new TimeDelta({microseconds: 1}), although note that arithmetic on time
-     * objects is not supported.
+     * new TimeDelta({microseconds: 1}).
      * @type {!TimeDelta}
      */
     static get resolution() {
