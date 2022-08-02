@@ -170,6 +170,14 @@ function strftime(dt, format) {
     return ret
 }
 
+
+/** @type {?TimeDelta} */
+let timeDeltaMin = null;
+/** @type {?TimeDelta} */
+let timeDeltaMax = null;
+/** @type {?TimeDelta} */
+let timeDeltaResolution = null;
+
 /**
  * Represents a duration, the difference between two dates or times.
  * Javascript version of
@@ -283,26 +291,51 @@ export class TimeDelta {
     valueOf() {
         return this.totalSeconds()
     }
-}
-/**
- * The most negative timedelta object, new TimeDelta({days: -999999999}).
- * @type {!TimeDelta}
- */
-TimeDelta.min = new TimeDelta({days: -999999999});
-/**
- * The most positive timedelta object, new TimeDelta({days: 999999999,
- * hours: 23, minutes: 59, seconds: 59, microseconds: 999999}).
- * @type {!TimeDelta}
- */
-TimeDelta.max = new TimeDelta({days: 999999999, hours: 23, minutes: 59,
-                               seconds: 59, microseconds: 999999});
-/**
- * The smallest possible difference between non-equal timedelta objects,
- * new TimeDelta({microseconds: 1}).
- * @type {!TimeDelta}
-*/
-TimeDelta.resolution = new TimeDelta({microseconds: 1});
 
+    /**
+     * The most negative timedelta object, new TimeDelta({days: -999999999}).
+     * @type {!TimeDelta}
+     */
+    static get min() {
+        if(!timeDeltaMin) {
+            timeDeltaMin = new TimeDelta({ days: -999999999 });
+        }
+        return timeDeltaMin;
+    }
+    /**
+     * The most positive timedelta object, new TimeDelta({days: 999999999,
+     * hours: 23, minutes: 59, seconds: 59, microseconds: 999999}).
+     * @type {!TimeDelta}
+     */
+    static get max() {
+        if(!timeDeltaMax) {
+            timeDeltaMax = new TimeDelta({
+                days: 999999999, hours: 23, minutes: 59,
+                seconds: 59, microseconds: 999999,
+            });
+        }
+        return timeDeltaMax;
+    }
+    /**
+     * The smallest possible difference between non-equal timedelta objects,
+     * new TimeDelta({microseconds: 1}).
+     * @type {!TimeDelta}
+    */
+    static get resolution() {
+        if(!timeDeltaResolution) {
+            timeDeltaResolution = new TimeDelta({ microseconds: 1 });
+        }
+        return timeDeltaResolution;
+    }
+}
+
+
+/** @type {?Date} */
+let dateMin = null;
+/** @type {?Date} */
+let dateMax = null;
+/** @type {?TimeDelta} */
+let dateResolution = null;
 
 /**
  * Represents a date (year, month and day) in an idealized calendar.
@@ -522,23 +555,38 @@ export class Date {
     valueOf() {
         return this.toOrdinal();
     }
+    /**
+     * The earliest representable date, new Date(MINYEAR, 1, 1).
+     * @type {!Date}
+     */
+    static get min() {
+        if(!dateMin) {
+            dateMin = new Date(MINYEAR, 1, 1);
+        }
+        return dateMin;
+    }
+    /**
+     * The latest representable date, new Date(MAXYEAR, 12, 31).
+     * @type {!Date}
+     */
+    static get max() {
+        if(!dateMax) {
+            dateMax = new Date(MAXYEAR, 12, 31);
+        }
+        return dateMax;
+    }
+    /**
+     * The smallest possible difference between non-equal date objects,
+     * new TimeDelta({days: 1}).
+     * @type {!TimeDelta}
+     */
+    static get resolution() {
+        if(!dateResolution) {
+            dateResolution = new TimeDelta({ days: 1 });
+        }
+        return dateResolution;
+    }
 }
-/**
- * The earliest representable date, new Date(MINYEAR, 1, 1).
- * @type {!Date}
- */
-Date.min = new Date(MINYEAR, 1, 1);
-/**
- * The latest representable date, new Date(MAXYEAR, 12, 31).
- * @type {!Date}
- */
-Date.max = new Date(MAXYEAR, 12, 31);
-/**
- * The smallest possible difference between non-equal date objects,
- * new TimeDelta({days: 1}).
- * @type {!TimeDelta}
- */
-Date.resolution = new TimeDelta({days: 1});
 
 
 /**
@@ -609,6 +657,9 @@ export class TZInfo {
     }
 }
 
+
+/** @type {?TimeZone} */
+let timeZoneUTC = null;
 
 /**
  * The TimeZone class is a subclass of TZInfo, each instance of which represents
@@ -700,12 +751,17 @@ export class TimeZone extends TZInfo {
         }
         return add(dt, this._offset)
     }
+    /**
+     * The UTC timezone, new TimeZone(new TimeDelta({})).
+     * @type {!TimeZone}
+     */
+    static get utc() {
+        if(!timeZoneUTC) {
+            timeZoneUTC = new TimeZone(new TimeDelta({}));
+        }
+        return timeZoneUTC;
+    }
 }
-/**
- * The UTC timezone, new TimeZone(new TimeDelta({})).
- * @type {!TimeZone}
- */
-TimeZone.utc =  new TimeZone(new TimeDelta({}));
 
 
 /**
@@ -782,6 +838,13 @@ class LocalTZInfo extends TZInfo {
  */
 export const LOCALTZINFO = new LocalTZInfo()
 
+
+/** @type {?Time} */
+let timeMin = null;
+/** @type {?Time} */
+let timeMax = null;
+/** @type {?TimeDelta} */
+let timeResolution = null;
 
 /**
  * A time object represents a (local) time of day, independent of any particular
@@ -1039,25 +1102,47 @@ export class Time {
     toString() {
         return this.isoFormat()
     }
+    /**
+     * The earliest representable time, new Time(0, 0, 0, 0).
+     * @type {!Time}
+     */
+    static get min() {
+        if(!timeMin) {
+            timeMin = new Time(0, 0, 0, 0);
+        }
+        return timeMin;
+    }
+    /**
+     * The latest representable time, new Time(23, 59, 59, 999999).
+     * @type {!Time}
+     */
+    static get max() {
+        if(!timeMax) {
+            timeMax = new Time(23, 59, 59, 999999);
+        }
+        return timeMax;
+    }
+    /**
+     * The smallest possible difference between non-equal time objects,
+     * new TimeDelta({microseconds: 1}), although note that arithmetic on time
+     * objects is not supported.
+     * @type {!TimeDelta}
+     */
+    static get resolution() {
+        if(!timeResolution) {
+            timeResolution = new TimeDelta({ microseconds: 1 });
+        }
+        return timeResolution;
+    }
 }
-/**
- * The earliest representable time, new Time(0, 0, 0, 0).
- * @type {!Time}
- */
-Time.min = new Time(0, 0, 0, 0);
-/**
- * The latest representable time, new Time(23, 59, 59, 999999).
- * @type {!Time}
- */
-Time.max = new Time(23, 59, 59, 999999);
-/**
- * The smallest possible difference between non-equal time objects,
- * new TimeDelta({microseconds: 1}), although note that arithmetic on time
- * objects is not supported.
- * @type {!TimeDelta}
- */
-Time.resolution = new TimeDelta({microseconds: 1});
 
+
+/** @type {?DateTime} */
+let dateTimeMin = null;
+/** @type {?DateTime} */
+let dateTimeMax = null;
+/** @type {?TimeDelta} */
+let dateTimeResolution = null;
 
 /**
  * A DateTime object is a single object containing all the information from a
@@ -1438,24 +1523,39 @@ export class DateTime extends Date {
     valueOf() {
         return this.timeStamp()
     }
+    /**
+     * The earliest representable DateTime, new DateTime(MINYEAR, 1, 1).
+     * @type {!DateTime}
+     */
+    static get min() {
+        if(!dateTimeMin) {
+            dateTimeMin = new DateTime(MINYEAR, 1, 1);
+        }
+        return dateTimeMin;
+    }
+    /**
+     * The latest representable DateTime, new DateTime(MAXYEAR, 12, 31, 23, 59,
+     * 59, 999999).
+     * @type {!DateTime}
+     */
+     static get max() {
+        if(!dateTimeMax) {
+            dateTimeMax = new DateTime(MAXYEAR, 12, 31, 23, 59, 59, 999999);
+        }
+        return dateTimeMax;
+    }
+    /**
+     * The smallest possible difference between non-equal DateTime objects,
+     * new TimeDelta({microseconds: 1}).
+     * @type {!TimeDelta}
+     */
+    static get resolution() {
+        if(!dateTimeResolution) {
+            dateTimeResolution = new TimeDelta({ microseconds: 1 });
+        }
+        return dateTimeResolution;
+    }
 }
-/**
- * The earliest representable DateTime, new DateTime(MINYEAR, 1, 1).
- * @type {!DateTime}
- */
-DateTime.min = new DateTime(MINYEAR, 1, 1)
-/**
- * The latest representable DateTime, new DateTime(MAXYEAR, 12, 31, 23, 59, 59,
- * 999999).
- * @type {!DateTime}
- */
-DateTime.max = new DateTime(MAXYEAR, 12, 31, 23, 59, 59, 999999);
-/**
- * The smallest possible difference between non-equal DateTime objects,
- * new TimeDelta({microseconds: 1}).
- * @type {!TimeDelta}
- */
-DateTime.resolution = new TimeDelta({microseconds: 1});
 
 
 function typeName(obj) {
