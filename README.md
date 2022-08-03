@@ -27,13 +27,11 @@ npm install @silane/datetime
 ```
 
 ### TypeScript or ES Module
-If you want to use `Date`, `TimeDelta` and `dtexpr`:
 ```javascript
 import { Date, TimeDelta, add, dtexpr } from '@silane/datetime';
 ```
 
 ### Common JS
-If you want to use `Date`, `TimeDelta` and `dtexpr`:
 ```javascript
 const { Date, TimeDelta, add, dtexpr } = require('@silane/datetime');
 ```
@@ -41,16 +39,16 @@ const { Date, TimeDelta, add, dtexpr } = require('@silane/datetime');
 ## Features
 This library has the almost same classes and functions as ["datetime" package in Python](https://docs.python.org/3/library/datetime.html).
 
-The differences are as follows.
+Differences are:
 - Identifier names are changed in order to adapt to JavaScript's naming style.
 - Some methods are not implemented.
 - Has some methods that are not in Python's package.
-- Parameter form of some methods are different (because JavaScript does not support keyword argument passing).
+- Parameter signature of some methods are different (because JavaScript does not support keyword argument passing).
 - Arithmetic operators are not supported because JavaScript does not support operator overriding.
   Instead you must use corresponding functions or `dtexpr` as explained after.
 
-### Main Classes
-Here introduce 4 main classes. See JSDoc and python's doc for the detail and other classes.
+### Major Classes
+Here introduce 4 major classes. See JSDoc and python's doc for the detail and other classes.
 
 #### TimeDelta
 Represents a duration, the difference between two dates or times.
@@ -113,7 +111,7 @@ Using individual function can make code complex and hard to read.
 In that case, `dtexpr` can be used to write an arithmetic expression in a more natual manner.
 
 `dtexpr` is a [tagged template function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#Tagged_templates)
-and used like:
+and used like the following.
 ```javascript
 const td1 = new TimeDelta({ hours: 7 });
 const td2 = new TimeDelta({ days: 2 });
