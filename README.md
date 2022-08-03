@@ -14,6 +14,7 @@ Then a global variable `datetime` contains all objects exported by this library.
 <script>
 const Date = datetime.Date;
 const TimeDelta = datetime.TimeDelta;
+const add = datetime.add;
 const dtexpr = datetime.dtexpr;
 // So on...
 </script>
@@ -28,13 +29,13 @@ npm install @silane/datetime
 ### TypeScript or ES Module
 If you want to use `Date`, `TimeDelta` and `dtexpr`:
 ```javascript
-import { Date, TimeDelta, dtexpr } from '@silane/datetime';
+import { Date, TimeDelta, add, dtexpr } from '@silane/datetime';
 ```
 
 ### Common JS
 If you want to use `Date`, `TimeDelta` and `dtexpr`:
 ```javascript
-const { Date, TimeDelta, dtexpr } = require('@silane/datetime');
+const { Date, TimeDelta, add, dtexpr } = require('@silane/datetime');
 ```
 
 ## Features
@@ -45,8 +46,8 @@ The differences are as follows.
 - Some methods are not implemented.
 - Has some methods that are not in Python's package.
 - Parameter form of some methods are different (because JavaScript does not support keyword argument passing).
-- Operator's are not supported because JavaScript does not support operator overriding.
-  Instead, you can use `dtexpr` feature as explained below.
+- Arithmetic operators are not supported because JavaScript does not support operator overriding.
+  Instead you must use corresponding functions or `dtexpr` as explained after.
 
 ### Main Classes
 Here introduce 4 main classes. See JSDoc and python's doc for the detail and other classes.
@@ -74,9 +75,43 @@ Date object and a Time object.
 const dt = new DateTime(2020, 5, 28, 8, 15, 37, 38899); // 2020/05/28 08:15:37.038899
 ```
 
-## dtexpr (alternative to operator overriding)
-Since JavaScript does not support operator overriding, dtexpr is used to write
-an expression.
+## Arithmetic Operations
+Since JavaScript cannot override operator, arithmetic operation on datetime objects requires to use individual functions: `neg`, `add`, `sub`, `cmp`.
+
+- `neg(a)`: Perform negation
+  - `neg(a: TimeDelta): TimeDelta`
+- `add(a, b)`: Perform addition
+  - `add(a: TimeDelta, b: TimeDelta): TimeDelta`
+  - `add(a: Date, b: TimeDelta): Date`
+  - `add(a: DateTime, b: TimeDelta): DateTime`
+  - `add(a: Time, b: TimeDelta): Time`
+    - Not defined in the Python library.
+    - Time cycles every 24 hours, which means 21:00 plus 6 hours is 03:00.
+- `sub(a, b)`: Perform subtraction
+  - `sub(a: TimeDelta, b: TimeDelta): TimeDelta`
+  - `sub(a: DateTime, b: TimeDelta): DateTime`
+  - `sub(a: DateTime, b: DateTime): TimeDelta`
+  - `sub(a: Date, b: TimeDelta): Date`
+  - `sub(a: Date, b: Date): TimeDelta`
+  - `sub(a: Time, b: TimeDelta): Time`
+    - Not defined in the Python library.
+    - Same as `add(a, neg(b))`.
+  - `sub(a: Time, b: Time): TimeDelta`
+    - Not defined in the Python library.
+    - Result is always positive duration, which means 9:00 minus 10:00 is 23 hours.
+- `cmp(a, b)`: Perform comparison - returns `0` if two are equal, `1` if `a` is greater than `b` and `-1` if `b` is greater than `a`.
+  - `cmp(a: TimeDelta, b: TimeDelta): -1 | 0 | 1`
+  - `cmp(a: DateTime, b: DateTime): -1 | 0 | 1`
+  - `cmp(a: Date, b: Date): -1 | 0 | 1`
+  - `cmp(a: Time, b: Time): -1 | 0 | 1`
+
+Note that multiplication and division are not supported.
+
+
+### dtexpr
+Using individual function can make code complex and hard to read.
+In that case, `dtexpr` can be used to write an arithmetic expression in a more natual manner.
+
 `dtexpr` is a [tagged template function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#Tagged_templates)
 and used like:
 ```javascript
@@ -87,41 +122,7 @@ const d2 = new Date(2020, 3, 17);
 
 dtexpr`${td1} + ${td2}` // returns new TimeDelta({hours: 55})
 dtexpr`${d1} - ${td2} == ${d2}` // returns true
+dtexpr`${td1} < -${td2}` // returns false
 ```
 
-### Supported Expression
-- Negation -
-  - -TimeDelta -> TimeDelta
-- Addition +
-  - TimeDelta + TimeDelta -> TimeDelta
-  - Date + TimeDelta -> Date
-  - DateTime + TimeDelta -> DateTime
-  - Time + TimeDelta -> Time
-    - Not defined in the Python library.
-    - Time cycles every 24 hours, which means 21:00 plus 6 hours is 03:00.
-- Subtraction -
-  - TimeDelta - TimeDelta -> TimeDelta
-  - DateTime - TimeDelta -> DateTime
-  - DateTime - DateTime -> TimeDelta
-  - Date - TimeDelta -> Date
-  - Date - Date -> TimeDelta
-  - Time - TimeDelta -> Time
-    - Not defined in the Python library.
-    - Same as `Time + (-TimeDelta)`.
-  - Time - Time -> TimeDelta
-    - Not defined in the Python library.
-    - Result is always positive duration, which means 9:00 minus 10:00 is 23 hours.
-- Equality ==, !=
-  - TimeDelta == TimeDelta -> boolean
-  - DateTime == DateTime -> boolean
-  - Date == Date -> boolean
-  - Time == Time -> boolean
-- Comparison <, >, <=, >=
-  - TimeDelta < TimeDelta -> boolean
-  - DateTime < DateTme -> boolean
-  - Date < Date -> boolean
-  - Time < Time -> boolean
-- Brackets ()
-
-Note that multiplication and division are not supported.
-Also operation with boolean type is not supported.
+A drawback is that `dtexpr` is not typed in TypeScript.
