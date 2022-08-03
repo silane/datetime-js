@@ -1748,9 +1748,10 @@ export function neg(a) {
  * @template {(!TimeDelta|!DateTime|!Date|!Time)} T
  * @param {T} a Left side value.
  * @param {T} b Right side value.
- * @returns {number}
+ * @returns {(-1|0|1)}
  */
 export function cmp(a, b) {
+    /** @returns {(-1|0|1)} */
     function _comp(a, b) {
         if(a === b) return 0
         if(a > b) return 1
