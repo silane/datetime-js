@@ -24,6 +24,8 @@
     "url": "https://github.com/silane/datetime-js.git"
   },
   "keywords": [
+    "temporal",
+    "moment",
     "datetime",
     "date",
     "time",
@@ -33,7 +35,8 @@
     "python",
     "esmodule",
     "commonjs",
-    "browser"
+    "browser",
+    "typescript"
   ],
   "author": "silane",
   "files": [
