@@ -2,7 +2,7 @@
 
 Date and time library for JavaScript similar to Python's "datetime" package.
 
-Available for ES Module, Common JS and browser(CDN).
+Available for TypeScript, ES Module, Common JS and browser(CDN).
 
 ## Getting Started with Browser
 Add `script` tag to your HTML.
@@ -25,7 +25,7 @@ const dtexpr = datetime.dtexpr;
 npm install @silane/datetime
 ```
 
-### ES Module
+### TypeScript or ES Module
 If you want to use `Date`, `TimeDelta` and `dtexpr`:
 ```javascript
 import { Date, TimeDelta, dtexpr } from '@silane/datetime';
