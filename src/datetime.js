@@ -293,7 +293,7 @@ export class TimeDelta {
     }
 
     /**
-     * The most negative timedelta object, new TimeDelta({days: -999999999}).
+     * The most negative timedelta object, new TimeDelta(\{days: -999999999\}).
      * @type {!TimeDelta}
      */
     static get min() {
@@ -303,8 +303,8 @@ export class TimeDelta {
         return timeDeltaMin;
     }
     /**
-     * The most positive timedelta object, new TimeDelta({days: 999999999,
-     * hours: 23, minutes: 59, seconds: 59, microseconds: 999999}).
+     * The most positive timedelta object, new TimeDelta(\{days: 999999999,
+     * hours: 23, minutes: 59, seconds: 59, microseconds: 999999\}).
      * @type {!TimeDelta}
      */
     static get max() {
@@ -318,7 +318,7 @@ export class TimeDelta {
     }
     /**
      * The smallest possible difference between non-equal timedelta objects,
-     * new TimeDelta({microseconds: 1}).
+     * new TimeDelta(\{microseconds: 1\}).
      * @type {!TimeDelta}
     */
     static get resolution() {
@@ -577,7 +577,7 @@ export class Date {
     }
     /**
      * The smallest possible difference between non-equal date objects,
-     * new TimeDelta({days: 1}).
+     * new TimeDelta(\{days: 1\}).
      * @type {!TimeDelta}
      */
     static get resolution() {
@@ -675,8 +675,8 @@ export class TimeZone extends TZInfo {
      *
      * @param {!TimeDelta} offset Represents the difference between the local
      *                            time and UTC. It must be strictly between
-     *                            -TimeDelta({hours: 24}) and
-     *                            TimeDelta({hours: 24}), otherwise
+     *                            -TimeDelta(\{hours: 24\}) and
+     *                            TimeDelta(\{hours: 24\}), otherwise
      *                            ValueDateTimeError is raised.
      * @param {?string} name If specified, it must be a string that will be used
      *                       as the value returned by the DateTime.tzname()
@@ -721,7 +721,7 @@ export class TimeZone extends TZInfo {
      * constructed.
      * If name is not provided in the constructor, the name returned by
      * tzName(dt) is generated from the value of the offset as follows.
-     * If offset is TimeDelta({}), the name is “UTC”, otherwise it is a string
+     * If offset is TimeDelta(\{\}), the name is “UTC”, otherwise it is a string
      * in the format UTC±HH:MM, where ± is the sign of offset, HH and MM are two
      * digits of offset.hours and offset.minutes respectively.
      * @param {?DateTime} dt This argument is ignored.
@@ -752,7 +752,7 @@ export class TimeZone extends TZInfo {
         return add(dt, this._offset)
     }
     /**
-     * The UTC timezone, new TimeZone(new TimeDelta({})).
+     * The UTC timezone, new TimeZone(new TimeDelta(\{\})).
      * @type {!TimeZone}
      */
     static get utc() {
@@ -1008,7 +1008,7 @@ export class Time {
     /**
      * Return a time with the same value, except for those attributes given new
      * values by whichever keyword arguments are specified. Note that
-     * {tzinfo: null} can be specified to create a naive time from an aware
+     * \{tzinfo: null\} can be specified to create a naive time from an aware
      * time, without conversion of the time data.
      * @param {Object} newValues The object consisting of new values.
      * @param {number} [newValues.hour]
@@ -1124,7 +1124,7 @@ export class Time {
     }
     /**
      * The smallest possible difference between non-equal time objects,
-     * new TimeDelta({microseconds: 1}).
+     * new TimeDelta(\{microseconds: 1\}).
      * @type {!TimeDelta}
      */
     static get resolution() {
@@ -1406,8 +1406,8 @@ export class DateTime extends Date {
     /**
      * Return a DateTime with the same attributes, except for those attributes
      * given new values by whichever keyword arguments are specified. Note that
-     * {tzInfo: null} can be specified to create a naive DateTime from an aware
-     * DateTime with no conversion of date and time data.
+     * \{tzInfo: null\} can be specified to create a naive DateTime from an
+     * aware DateTime with no conversion of date and time data.
      * @param {Object} newValues The object consisting of new values.
      * @param {number} [newValues.year]
      * @param {number} [newValues.month]
@@ -1545,7 +1545,7 @@ export class DateTime extends Date {
     }
     /**
      * The smallest possible difference between non-equal DateTime objects,
-     * new TimeDelta({microseconds: 1}).
+     * new TimeDelta(\{microseconds: 1\}).
      * @type {!TimeDelta}
      */
     static get resolution() {
