@@ -13,7 +13,7 @@ Then a global variable `datetime` contains all objects exported by this library.
 ```html
 <script>
 const Date = datetime.Date;
-const TimeDelta = datetime.TimeDelta;
+const timedelta = datetime.timedelta;
 const add = datetime.add;
 const dtexpr = datetime.dtexpr;
 // So on...
@@ -53,24 +53,32 @@ Here introduce 4 major classes. See JSDoc and python's doc for the detail and ot
 #### TimeDelta
 Represents a duration, the difference between two dates or times.
 ```javascript
-const td = new TimeDelta({ days: 1, hours: 22, minutes: 53, seconds: 12, microseconds: 324987});
+const td = new TimeDelta({ days: 1, hours: 22, minutes: 53, seconds: 12, microseconds: 324987 });
+
+const td2 = timedelta({ days: -10, minutes: -829 }); // Convenient function without `new`
 ```
 #### Date
 Represents a date (year, month and day) in an idealized calendar.
 ```javascript
 const d = new Date(2020, 5, 28); // 2020/05/28
+
+const d2 = date(1948, 12, 8);
 ```
 #### Time
 A Time object represents a (local) time of day, independent of any particular
 day, and subject to adjustment via a tzinfo object.
 ```javascript
 const t = new Time(8, 15, 37, 38899); // 08:15:37.038899
+
+const t2 = time(23, 59, 59);
 ```
 #### DateTime
 A DateTime object is a single object containing all the information from a
 Date object and a Time object.
 ```javascript
 const dt = new DateTime(2020, 5, 28, 8, 15, 37, 38899); // 2020/05/28 08:15:37.038899
+
+const dt2 = datetime(1830, 1, 1);
 ```
 
 ## Arithmetic Operations
@@ -113,12 +121,12 @@ In that case, `dtexpr` can be used to write an arithmetic expression in a more n
 `dtexpr` is a [tagged template function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#Tagged_templates)
 and used like the following.
 ```javascript
-const td1 = new TimeDelta({ hours: 7 });
-const td2 = new TimeDelta({ days: 2 });
-const d1 = new Date(2020, 3, 19);
-const d2 = new Date(2020, 3, 17);
+const td1 = timedelta({ hours: 7 });
+const td2 = timedelta({ days: 2 });
+const d1 = date(2020, 3, 19);
+const d2 = date(2020, 3, 17);
 
-dtexpr`${td1} + ${td2}` // returns new TimeDelta({hours: 55})
+dtexpr`${td1} + ${td2}` // returns timedelta({hours: 55})
 dtexpr`${d1} - ${td2} == ${d2}` // returns true
 dtexpr`${td1} < -${td2}` // returns false
 ```
