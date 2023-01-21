@@ -12,10 +12,8 @@ export const MINYEAR = 1
  */
 export const MAXYEAR = 9999
 
-
 /** @typedef {globalThis.Date} stdDate */
 const stdDate = globalThis.Date;
-
 
 /**
  * "stdDate.UTC" converts years between 0 and 99 to a year in the 20th century.
@@ -40,10 +38,8 @@ function safeStdDateUTC(year, month, day, hour, minute, second, millisecond) {
     return d;
 }
 
-
 const daysPerMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 const leapedDaysPerMonth = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
-
 
 const totalDaysPerMonth = (function() {
     let sum = 0
@@ -58,20 +54,33 @@ const totalLeapedDaysPerMonth = (function() {
     return ret
 })()
 
-
+/**
+ * Calculate quotient and remainder.
+ * @param {number} a - Dividend
+ * @param {number} b - Divisor
+ * @returns {[number, number]} Quotient and remainder respectively
+ */
 function divmod(a, b) {
     const quotient = Math.floor(a / b)
     return [quotient, a - quotient * b]
 }
 
-
+/**
+ * Number to "0" padded string with given length.
+ * @param {number} integer
+ * @param {number} length
+ * @returns {string}
+ */
 function zeroPad(integer, length) {
     return integer.toString().padStart(length, '0')
 }
 
-
-// "timeDelta" must be "TimeDelta({hours: -24}) < timeDelta <
-// TimeDelta({hours: 24})"
+/**
+ * TimeDelta to offset string.
+ * @param {TimeDelta} timeDelta - Must be between timedelta({hours: -24}) and
+ * timedelta({hours: 24}) both exclusive.
+ * @returns {string}
+ */
 function toOffsetString(timeDelta) {
     let offset = timeDelta
     const minus = offset.days < 0
@@ -93,7 +102,11 @@ function toOffsetString(timeDelta) {
     return ret
 }
 
-
+/**
+ * Returns if it's leap year.
+ * @param {number} year
+ * @returns {boolean}
+ */
 function isLeapYear(year) {
     if(year % 4 !== 0)
         return false
@@ -102,7 +115,12 @@ function isLeapYear(year) {
     return true
 }
 
-
+/**
+ * DateTime to formatted string.
+ * @param {DateTime} dt
+ * @param {string} format
+ * @returns {string}
+ */
 function strftime(dt, format) {
     const a = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
     const A = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday',
