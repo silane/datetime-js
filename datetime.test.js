@@ -8,7 +8,7 @@ import {
 } from './src/index.js';
 
 
-const StdDate = Function('return this')().Date;
+const StdDate = globalThis.Date;
 
 
 function datetimeCmpMatcherHelper(_this, matcherName, comparison,
