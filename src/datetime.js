@@ -282,7 +282,13 @@ export class TimeDelta {
      * @returns {number}
      */
     totalSeconds() {
-        return this.days * 3600 * 24 + this.seconds + this.microseconds / (1000 ** 2)
+        if(this._totalSeconds != null) return this._totalSeconds;
+        /**
+         * @private
+         */
+        this._totalSeconds =
+          this.days * 3600 * 24 + this.seconds + this.microseconds / 1000000;
+        return this._totalSeconds;
     }
 
     /**
@@ -290,6 +296,8 @@ export class TimeDelta {
      * @returns {string}
      */
     toString() {
+        if(this._string != null) return this._string;
+
         let ret = ''
         if(this.days) {
             ret += `${this.days} day(s), `
@@ -300,6 +308,10 @@ export class TimeDelta {
         if(this.microseconds) {
             ret += `.${zeroPad(this.microseconds, 6)}`
         }
+        /**
+         * @private
+         */
+        this._string = ret;
         return ret
     }
 
@@ -517,6 +529,8 @@ export class Date {
      * @returns {number}
      */
     toOrdinal() {
+        if(this._ordinal != null) return this._ordinal;
+
         let totalDays = 0
 
         const lastYear = this.year - 1
@@ -531,7 +545,10 @@ export class Date {
         }
 
         totalDays += this.day
-
+        /**
+         * @private
+         */
+        this._ordinal = totalDays;
         return totalDays
     }
     /**
@@ -547,7 +564,14 @@ export class Date {
      * @returns {string}
      */
     isoFormat() {
-        return `${zeroPad(this.year, 4)}-${zeroPad(this.month, 2)}-${zeroPad(this.day, 2)}`
+        if(this._isoFormat != null) return this._isoFormat;
+        /**
+         * @private
+         */
+        this._isoFormat = `${zeroPad(this.year, 4)}-${
+            zeroPad(this.month, 2)
+        }-${zeroPad(this.day, 2)}`;
+        return this._isoFormat;
     }
     /**
      * Return a string representing the date, controlled by an explicit format
@@ -1055,6 +1079,10 @@ export class Time {
             timeSpec = this.microsecond ? 'microseconds' : 'seconds'
         }
 
+        if(this._isoFormat?.[timeSpec] != null) {
+            return this._isoFormat[timeSpec];
+        }
+
         let ret = ''
         switch(timeSpec) {
             case 'microseconds':
@@ -1081,6 +1109,14 @@ export class Time {
         if(offset != null) {
             ret += toOffsetString(offset)
         }
+        if(!this._isoFormat) {
+            /**
+             * @private
+             * @type {Record<string, string>}
+             */
+            this._isoFormat = {}
+        }
+        this._isoFormat[timeSpec] = ret;
         return ret
     }
     /**
@@ -1402,7 +1438,12 @@ export class DateTime extends Date {
      * @returns {!Date}
      */
     date() {
-        return new Date(this.year, this.month, this.day)
+        if(this._date != null) return this._date;
+        /**
+         * @private
+         */
+        this._date = new Date(this.year, this.month, this.day);
+        return this._date;
     }
     /**
      * Return Time object with same hour, minute, second, microsecond and fold.
@@ -1410,8 +1451,15 @@ export class DateTime extends Date {
      * @returns {!Time}
      */
     time() {
-        return new Time(this.hour, this.minute, this.second, this.microsecond,
-                        null, this.fold)
+        if(this._time != null) return this._time;
+        /**
+         * @private
+         */
+        this._time = new Time(
+            this.hour, this.minute, this.second, this.microsecond,
+            null, this.fold
+        );
+        return this._time;
     }
     /**
      * Return Time object with same hour, minute, second, microsecond, fold, and
@@ -1419,8 +1467,15 @@ export class DateTime extends Date {
      * @returns {!Time}
      */
     timetz() {
-        return new Time(this.hour, this.minute, this.second, this.microsecond,
-                        this.tzInfo, this.fold)
+        if(this._timetz != null) return this._timetz;
+        /**
+         * @private
+         */
+        this._timetz = new Time(
+            this.hour, this.minute, this.second, this.microsecond,
+            this.tzInfo, this.fold
+        );
+        return this._timetz;
     }
     /**
      * Return a DateTime with the same attributes, except for those attributes
@@ -1497,13 +1552,20 @@ export class DateTime extends Date {
      * @returns {number}
      */
     timeStamp() {
+        if(this._timestamp != null) return this._timestamp;
+
         /** @type {DateTime} */
         let dt = this
         if(this.utcOffset() == null) {
             dt = this.replace({tzInfo: LOCALTZINFO})
         }
-        return sub(dt, new DateTime(
-            1970, 1, 1, 0, 0, 0, 0, TimeZone.utc)).totalSeconds()
+        /**
+         * @private
+         */
+        this._timestamp =  sub(dt, new DateTime(
+            1970, 1, 1, 0, 0, 0, 0, TimeZone.utc
+        )).totalSeconds();
+        return this._timestamp;
     }
     /**
      * Return a string representing the date and time in ISO 8601 format.
