@@ -2,7 +2,7 @@ import { diff } from 'jest-diff';
 import {
     MAXYEAR, MINYEAR, TimeDelta, Date, TZInfo, TimeZone, Time, DateTime,
     LOCALTZINFO, neg, cmp, add, sub, dtexpr,
-    ValueDateTimeError, NotImplementedDateTimeError,
+    TypeDateTimeError, ValueDateTimeError, NotImplementedDateTimeError,
     SyntaxDtexprDateTimeError, ExecutionDtexprDateTimeError,
 } from './src/index.js';
 
@@ -1185,6 +1185,12 @@ describe('add', () => {
             }
         }
     });
+
+    test('throws an error when invalid type passed', () => {
+        expect(
+            () => add(new Date(1, 1, 1), new Date(1, 1, 1))
+        ).toThrow(TypeDateTimeError);
+    });
 });
 
 describe('sub', () => {
@@ -1237,7 +1243,7 @@ describe('sub', () => {
     });
 
     test('throws an error taking difference between naive and aware DateTime',
-         () =>{
+         () => {
         const naive = new DateTime(1, 1, 1, 0, 0, 0, 0, null);
         const aware = new DateTime(1, 1, 1, 0, 0, 0, 0,
                                    new TimeZone(new TimeDelta({})));
@@ -1247,13 +1253,19 @@ describe('sub', () => {
 
     test(
         'throws an error taking difference between naive and aware Time',
-        () =>{
+        () => {
             const naive = new Time(0, 0, 0, 0, null);
             const aware = new Time(0, 0, 0, 0, new TimeZone(new TimeDelta({})));
             expect(() => sub(naive, aware)).toThrow();
             expect(() => sub(aware, naive)).toThrow();
         }
     );
+
+    test('throws an error when invalid type passed', () => {
+        expect(
+            () => sub(new DateTime(1, 1, 1), new Time(0, 0, 0))
+        ).toThrow(TypeDateTimeError);
+    });
 });
 
 describe('neg', () => {
@@ -1265,6 +1277,10 @@ describe('neg', () => {
     ])('negation of %s to be %s', (a, expected) => {
         const received = neg(a);
         expect(received).toBeEqualDateTime(expected);
+    });
+
+    test('throws an error when invalid type passed', () => {
+        expect(() => neg(new Date(1, 1, 1))).toThrow(TypeDateTimeError);
     });
 });
 
@@ -1309,6 +1325,16 @@ describe('cmp', () => {
         const aware = new Time(0, 0, 0, 0, new TimeZone(new TimeDelta({})));
         expect(() => cmp(naive, aware)).toThrow();
         expect(() => cmp(aware, naive)).toThrow();
+    });
+
+    test('throws an error when invalid type passed', () => {
+        expect(
+            () => cmp(new TimeDelta({}), new Time(0, 0, 0))
+        ).toThrow(TypeDateTimeError);
+        expect(() => cmp(new TimeDelta({}), null)).toThrow(TypeDateTimeError);
+        expect(
+            () => cmp(new TimeDelta({}), undefined)
+        ).toThrow(TypeDateTimeError);
     });
 });
 
