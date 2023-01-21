@@ -1,7 +1,8 @@
 import { diff } from 'jest-diff';
 import {
     MAXYEAR, MINYEAR, TimeDelta, Date, TZInfo, TimeZone, Time, DateTime,
-    LOCALTZINFO, neg, cmp, add, sub, dtexpr,
+    LOCALTZINFO, neg, cmp, add, sub,
+    timedelta, date, timezone, time, datetime, dtexpr,
     TypeDateTimeError, ValueDateTimeError, NotImplementedDateTimeError,
     SyntaxDtexprDateTimeError, ExecutionDtexprDateTimeError,
 } from './src/index.js';
@@ -1335,6 +1336,30 @@ describe('cmp', () => {
         expect(
             () => cmp(new TimeDelta({}), undefined)
         ).toThrow(TypeDateTimeError);
+    });
+});
+
+describe('convenient object creation functions', () => {
+    test('timedelta', () => {
+        expect(
+            timedelta({ days: 1, microseconds: 1 })
+        ).toBeEqualDateTime(new TimeDelta({ days: 1, microseconds: 1 }));
+    });
+    test('date', () => {
+        expect(date(384, 5, 13)).toBeEqualDateTime(new Date(384, 5, 13));
+    });
+    test('timezone', () => {
+        expect(timezone(new TimeDelta({}))).toBeInstanceOf(TimeZone);
+    });
+    test('time', () => {
+        expect(
+            time(21, 55, 31, 233983)
+        ).toBeEqualDateTime(new Time(21, 55, 31, 233983));
+    });
+    test('datetime', () => {
+        expect(
+            datetime(8264, 4, 9, 3, 11, 39, 409581)
+        ).toBeEqualDateTime(new DateTime(8264, 4, 9, 3, 11, 39, 409581));
     });
 });
 

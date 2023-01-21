@@ -1832,3 +1832,48 @@ export function cmp(a, b) {
     throw new TypeDateTimeError(
         `Cannot compare type "${typeName(a)}" to type "${typeName(b)}".`)
 }
+
+/**
+ * Convenient function to create {@link TimeDelta} object.
+ * @param {ConstructorParameters<typeof TimeDelta>} args 
+ * @returns {TimeDelta}
+ */
+export function timedelta(...args) {
+    return new TimeDelta(...args);
+}
+
+/**
+ * Convenient function to create {@link Date} object.
+ * @param {ConstructorParameters<typeof Date>} args 
+ * @returns {Date}
+ */
+export function date(...args) {
+    return new Date(...args);
+}
+
+/**
+ * Convenient function to create {@link TimeZone} object.
+ * @param {ConstructorParameters<typeof TimeZone>} args 
+ * @returns {TimeZone}
+ */
+export function timezone(...args) {
+    return new TimeZone(...args);
+}
+
+/**
+ * Convenient function to create {@link Time} object.
+ * @param {ConstructorParameters<typeof Time>} args 
+ * @returns {Time}
+ */
+export function time(...args) {
+    return new Time(...args);
+}
+
+/**
+ * Convenient function to create {@link DateTime} object.
+ * @param {ConstructorParameters<typeof DateTime>} args 
+ * @returns {DateTime}
+ */
+export function datetime(...args) {
+    return new DateTime(...args);
+}
