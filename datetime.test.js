@@ -1,7 +1,8 @@
 import { diff } from 'jest-diff';
 import {
-    MAXYEAR, MINYEAR, TimeDelta, Date, TimeZone, Time, DateTime, LOCALTZINFO,
-    neg, cmp, add, sub, dtexpr, ValueDateTimeError,
+    MAXYEAR, MINYEAR, TimeDelta, Date, TZInfo, TimeZone, Time, DateTime,
+    LOCALTZINFO, neg, cmp, add, sub, dtexpr,
+    ValueDateTimeError, NotImplementedDateTimeError,
     SyntaxDtexprDateTimeError, ExecutionDtexprDateTimeError,
 } from './src/index.js';
 
@@ -399,6 +400,23 @@ describe('Date', () => {
     });
 });
 
+describe('TZInfo', () => {
+    test('throws an error calling methods of direct instance', () => {
+        expect(
+            () => new TZInfo().utcOffset()
+        ).toThrow(NotImplementedDateTimeError);
+        expect(() => new TZInfo().dst()).toThrow(NotImplementedDateTimeError);
+        expect(
+            () => new TZInfo().tzName()
+        ).toThrow(NotImplementedDateTimeError);
+        expect(() => {
+            const tzInfo = new TZInfo();
+            const dt = new DateTime(1, 1, 1, 0, 0, 0, 0, tzInfo);
+            tzInfo.fromUTC(dt);
+        }).toThrow(NotImplementedDateTimeError);
+    });
+});
+
 describe('TimeZone', () => {
     test(
         'throws an error calling constructor with offset of 24 or greater hours',
@@ -452,6 +470,19 @@ describe('TimeZone', () => {
         const dt = new DateTime(1284, 5, 31, 0, 0, 0, 0, tz1);
         expect(() => tz2.fromUTC(dt)).toThrow(ValueDateTimeError);
     });
+});
+
+describe('LOCALTZINFO', () => {
+    test(
+        'throws an error calling "fromUTC(dt)" with "dt" of different ' +
+        'TimeZone instance', () => {
+            const offset = new TimeDelta({hours: -15, minutes: -34});
+            const tz1 = new TimeZone(offset);
+            const tz2 = new TimeZone(offset);
+            const dt = new DateTime(1284, 5, 31, 0, 0, 0, 0, tz1);
+            expect(() => tz2.fromUTC(dt)).toThrow(ValueDateTimeError);
+        }
+    );
 });
 
 describe('Time', () => {
