@@ -47,8 +47,8 @@ Differences are:
 - Arithmetic operators are not supported because JavaScript does not support operator overriding.
   Instead you must use corresponding functions or `dtexpr` as explained after.
 
-### Major Classes
-Here introduce 4 major classes. See JSDoc and python's doc for the detail and other classes.
+### Common Classes
+Here introduces 4 classes briefly. See JSDoc and python's doc for the detail and other classes.
 
 #### TimeDelta
 Represents a duration, the difference between two dates or times.
@@ -131,4 +131,4 @@ dtexpr`${d1} - ${td2} == ${d2}` // returns true
 dtexpr`${td1} < -${td2}` // returns false
 ```
 
-A drawback is that `dtexpr` is not typed in TypeScript.
+The drawback is that `dtexpr` is not typed in TypeScript.
