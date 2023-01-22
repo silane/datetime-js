@@ -1132,6 +1132,13 @@ describe('DateTime', () => {
         ));
         expect(dt.toString()).toBe('0039-06-23 21:39:00-00:51:19.048819');
     });
+
+    test('valueOf()', () => {
+        const dt = new DateTime(39, 6, 23, 21, 39, 0, 0, new TimeZone(
+            new TimeDelta({minutes: -51, seconds: -19, microseconds: -48819})
+        ));
+        expect(dt.valueOf()).toBe(dt.timeStamp());
+    });
 });
 
 describe('add', () => {
