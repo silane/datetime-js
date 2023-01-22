@@ -38,6 +38,7 @@
     "browser",
     "typescript"
   ],
+  "homepage": "https://github.com/silane/datetime-js",
   "author": "silane",
   "files": [
     "package.json",
