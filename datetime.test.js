@@ -1087,14 +1087,17 @@ describe('DateTime', () => {
     test.each([
         [' ', 'auto', '2948-04-13 09:33:00+03:34'],
         ['T', 'microseconds', '2948-04-13T09:33:00.000000+03:34'],
-        ['T', 'milliseconds', '2948-04-13T09:33:00.000+03:34'],
+        [undefined, 'milliseconds', '2948-04-13T09:33:00.000+03:34'],
         [' ', 'seconds', '2948-04-13 09:33:00+03:34'],
         ['T', 'minutes', '2948-04-13T09:33+03:34'],
         ['abcd', 'hours', '2948-04-13abcd09+03:34'],
-    ])('isoFormat("%s", "%s") of aware DateTime',
-       (sep, timespec, expected) => {
+        [undefined, undefined, '2948-04-13T09:33:00+03:34'],
+    ])('isoFormat("%s", "%s") of aware DateTime', (
+        sep, timespec, expected
+    ) => {
         const dt = new DateTime(2948, 4, 13, 9, 33, 0, 0, new TimeZone(
-            new TimeDelta({hours: 3, minutes: 34})));
+            new TimeDelta({ hours: 3, minutes: 34 })
+        ));
         expect(dt.isoFormat(sep, timespec)).toBe(expected);
     });
 
