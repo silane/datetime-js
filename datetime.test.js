@@ -647,6 +647,11 @@ describe('Time', () => {
         expect(time.isoFormat()).toBe('00:09:39');
     });
 
+    test('isoFormat() throws an error on invalid timeSpec', () => {
+        const time = new Time(0, 9, 39);
+        expect(() => time.isoFormat('abcd')).toThrow(ValueDateTimeError)
+    });
+
     test('utcOffset()', () => {
         const tzInfo = new TimeZone(new TimeDelta({hours: 20}));
         let time = new Time(0, 0, 0, 0, tzInfo);
