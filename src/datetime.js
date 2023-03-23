@@ -1651,12 +1651,25 @@ function typeName(obj) {
 
 /**
  * Add two datetime objects.
+ * 
+ * @overload
+ * @param {TimeDelta} a
+ * @param {TimeDelta} b
+ * @returns {TimeDelta}
+ * 
+ * @template {DateTime | Date | Time} T
+ * @overload
+ * @param {T} a
+ * @param {TimeDelta} b
+ * @returns {T}
+ * 
+ * @template {DateTime | Date | Time} T
+ * @overload
+ * @param {TimeDelta} a
+ * @param {T} b
+ * @returns {T}
  */
-export const add =
-/**
- * @type {(function(TimeDelta, TimeDelta): TimeDelta)&(function(DateTime, TimeDelta): DateTime)&(function(Date, TimeDelta): Date)&(function(Time, TimeDelta): Time)}
- */
-(function add(a, b) {
+export function add(a, b) {
     function date_plus_timedelta(d, td) {
         d = d.toStdDate()
         d.setDate(d.getDate() + td.days)
@@ -1717,17 +1730,30 @@ export const add =
     }
     throw new TypeDateTimeError(
         `Cannot add type "${typeName(a)}" and type "${typeName(b)}".`)
-})
+}
 
 
 /**
  * Subtract two datetime objects.
+ * 
+ * @overload
+ * @param {TimeDelta} a
+ * @param {TimeDelta} b
+ * @returns {TimeDelta}
+ * 
+ * @template {DateTime | Date | Time} T
+ * @overload
+ * @param {T} a
+ * @param {T} b
+ * @returns {TimeDelta}
+ * 
+ * @template {DateTime | Date | Time} T
+ * @overload
+ * @param {T} a
+ * @param {TimeDelta} b
+ * @returns {T}
  */
-export const sub =
-/**
- * @type {(function(TimeDelta, TimeDelta): TimeDelta)&(function(DateTime, TimeDelta): DateTime)&(function(DateTime, DateTime): TimeDelta)&(function(Date, TimeDelta): Date)&(function(Date, Date): TimeDelta)&(function(Time, TimeDelta): Time)&(function(Time, Time): TimeDelta)}
- */
-(function (a, b) {
+export function sub(a, b) {
     if(a instanceof TimeDelta && b instanceof TimeDelta) {
         return new TimeDelta({
             days: a.days - b.days,
@@ -1802,7 +1828,7 @@ export const sub =
     }
     throw new TypeDateTimeError(
         `Cannnot subtract type "${typeName(b)}" from type "${typeName(a)}".`)
-})
+}
 
 
 /**
