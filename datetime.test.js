@@ -229,6 +229,14 @@ describe('TimeDelta', () => {
             {days: 4, seconds: 1984, milliseconds: 193870});
         expect(td.valueOf()).toBeCloseTo(td.totalSeconds());
     });
+
+    test('totalSeonds() and toString() when object is freezed', () => {
+        const td = Object.freeze(new TimeDelta({
+            days: 2987, seconds: 23879, microseconds: 983613,
+        }));
+        expect(td.totalSeconds()).toBeCloseTo(258100679.983613);
+        expect(td.toString()).toBe('2987 day(s), 6:37:59.983613');
+    });
 });
 
 
@@ -399,6 +407,12 @@ describe('Date', () => {
     test('valueOf()', () => {
         const date = new Date(89, 1, 30);
         expect(date.valueOf()).toBe(date.toOrdinal());
+    });
+
+    test('toOrdinal() and isoFormat() when object is freezed', () => {
+        const date = Object.freeze(new Date(8720, 3, 12));
+        expect(date.toOrdinal()).toBe(3184620);
+        expect(date.isoFormat()).toBe('8720-03-12');
     });
 });
 
@@ -714,8 +728,14 @@ describe('Time', () => {
     test('toString()', () => {
         const t = new Time(
             18, 9, 29, 0,
-            new TimeZone(new TimeDelta({hours: 20, minutes: 38})));
+            new TimeZone(new TimeDelta({hours: 20, minutes: 38}))
+        );
         expect(t.toString()).toBe('18:09:29+20:38');
+    });
+
+    test('isoFormat() when object is freezed', () => {
+        const t = Object.freeze(new Time(4, 39, 21, 907819));
+        expect(t.isoFormat()).toBe('04:39:21.907819');
     });
 });
 
@@ -1139,6 +1159,14 @@ describe('DateTime', () => {
             new TimeDelta({minutes: -51, seconds: -19, microseconds: -48819})
         ));
         expect(dt.valueOf()).toBe(dt.timeStamp());
+    });
+
+    test('date(), time(), timetz() and timeStamp() when object freezed', () => {
+        const dt = Object.freeze(new DateTime(4983, 7, 30, 19, 9, 24));
+        expect(dt.date()).toBeEqualDateTime(new Date(4983, 7, 30));
+        expect(dt.time()).toBeEqualDateTime(new Time(19, 9, 24));
+        expect(dt.timetz()).toBeEqualDateTime(new Time(19, 9, 24));
+        expect(dt.timeStamp()).toBeCloseTo(95099306964.0);
     });
 });
 

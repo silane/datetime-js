@@ -55,6 +55,25 @@ const totalLeapedDaysPerMonth = (function() {
 })()
 
 /**
+ * Try set property value and returns true if successful or false if fails for some reason like object is freezed.
+ * @param {object} obj
+ * @param {string | symbol} prop
+ * @param {unknown} value
+ * @returns {boolean}
+ */
+function trySetProperty(obj, prop, value) {
+    try {
+        obj[prop] = value;
+    } catch(e) {
+        if(e instanceof TypeError) {
+            return false;
+        }
+        throw e;
+    }
+    return Object.is(obj[prop], value);
+}
+
+/**
  * Calculate quotient and remainder.
  * @param {number} a - Dividend
  * @param {number} b - Divisor
@@ -282,13 +301,12 @@ export class TimeDelta {
      * @returns {number}
      */
     totalSeconds() {
-        if(this._totalSeconds != null) return this._totalSeconds;
-        /**
-         * @private
-         */
-        this._totalSeconds =
-          this.days * 3600 * 24 + this.seconds + this.microseconds / 1000000;
-        return this._totalSeconds;
+        if(this['_totalSeconds'] != null) return this['_totalSeconds'];
+        const ret = (
+            this.days * 3600 * 24 + this.seconds + this.microseconds / 1000000
+        );
+        trySetProperty(this, '_totalSeconds', ret);
+        return ret;
     }
 
     /**
@@ -296,7 +314,7 @@ export class TimeDelta {
      * @returns {string}
      */
     toString() {
-        if(this._string != null) return this._string;
+        if(this['_string'] != null) return this['_string'];
 
         let ret = ''
         if(this.days) {
@@ -308,10 +326,7 @@ export class TimeDelta {
         if(this.microseconds) {
             ret += `.${zeroPad(this.microseconds, 6)}`
         }
-        /**
-         * @private
-         */
-        this._string = ret;
+        trySetProperty(this, '_string', ret);
         return ret
     }
 
@@ -529,7 +544,7 @@ export class Date {
      * @returns {number}
      */
     toOrdinal() {
-        if(this._ordinal != null) return this._ordinal;
+        if(this['_ordinal'] != null) return this['_ordinal'];
 
         let totalDays = 0
 
@@ -545,10 +560,8 @@ export class Date {
         }
 
         totalDays += this.day
-        /**
-         * @private
-         */
-        this._ordinal = totalDays;
+
+        trySetProperty(this, '_ordinal', totalDays);
         return totalDays
     }
     /**
@@ -564,14 +577,12 @@ export class Date {
      * @returns {string}
      */
     isoFormat() {
-        if(this._isoFormat != null) return this._isoFormat;
-        /**
-         * @private
-         */
-        this._isoFormat = `${zeroPad(this.year, 4)}-${
+        if(this['_isoFormat'] != null) return this['_isoFormat'];
+        const ret = `${zeroPad(this.year, 4)}-${
             zeroPad(this.month, 2)
         }-${zeroPad(this.day, 2)}`;
-        return this._isoFormat;
+        trySetProperty(this, '_isoFormat', ret);
+        return ret;
     }
     /**
      * Return a string representing the date, controlled by an explicit format
@@ -1079,8 +1090,8 @@ export class Time {
             timeSpec = this.microsecond ? 'microseconds' : 'seconds'
         }
 
-        if(this._isoFormat?.[timeSpec] != null) {
-            return this._isoFormat[timeSpec];
+        if(this['_isoFormat']?.[timeSpec] != null) {
+            return this['_isoFormat'][timeSpec];
         }
 
         let ret = ''
@@ -1109,14 +1120,13 @@ export class Time {
         if(offset != null) {
             ret += toOffsetString(offset)
         }
-        if(!this._isoFormat) {
-            /**
-             * @private
-             * @type {Record<string, string>}
-             */
-            this._isoFormat = {}
+        if(!this['_isoFormat']) {
+            trySetProperty(this, '_isoFormat', {});
         }
-        this._isoFormat[timeSpec] = ret;
+        // Suppose the object is freezed by  is 
+        if(this['_isoFormat']) {
+            trySetProperty(this['_isoFormat'], timeSpec, ret);
+        }
         return ret
     }
     /**
@@ -1438,12 +1448,10 @@ export class DateTime extends Date {
      * @returns {!Date}
      */
     date() {
-        if(this._date != null) return this._date;
-        /**
-         * @private
-         */
-        this._date = new Date(this.year, this.month, this.day);
-        return this._date;
+        if(this['_date'] != null) return this['_date'];
+        const ret = new Date(this.year, this.month, this.day);
+        trySetProperty(this, '_date', ret);
+        return ret;
     }
     /**
      * Return Time object with same hour, minute, second, microsecond and fold.
@@ -1451,15 +1459,13 @@ export class DateTime extends Date {
      * @returns {!Time}
      */
     time() {
-        if(this._time != null) return this._time;
-        /**
-         * @private
-         */
-        this._time = new Time(
+        if(this['_time'] != null) return this['_time'];
+        const ret = new Time(
             this.hour, this.minute, this.second, this.microsecond,
             null, this.fold
         );
-        return this._time;
+        trySetProperty(this, '_time', ret);
+        return ret;
     }
     /**
      * Return Time object with same hour, minute, second, microsecond, fold, and
@@ -1467,15 +1473,13 @@ export class DateTime extends Date {
      * @returns {!Time}
      */
     timetz() {
-        if(this._timetz != null) return this._timetz;
-        /**
-         * @private
-         */
-        this._timetz = new Time(
+        if(this['_timetz'] != null) return this['_timetz'];
+        const ret = new Time(
             this.hour, this.minute, this.second, this.microsecond,
             this.tzInfo, this.fold
         );
-        return this._timetz;
+        trySetProperty(this, '_timetz', ret);
+        return ret;
     }
     /**
      * Return a DateTime with the same attributes, except for those attributes
@@ -1552,20 +1556,18 @@ export class DateTime extends Date {
      * @returns {number}
      */
     timeStamp() {
-        if(this._timestamp != null) return this._timestamp;
+        if(this['_timestamp'] != null) return this['_timestamp'];
 
         /** @type {DateTime} */
         let dt = this
         if(this.utcOffset() == null) {
             dt = this.replace({tzInfo: LOCALTZINFO})
         }
-        /**
-         * @private
-         */
-        this._timestamp =  sub(dt, new DateTime(
+        const ret = sub(dt, new DateTime(
             1970, 1, 1, 0, 0, 0, 0, TimeZone.utc
         )).totalSeconds();
-        return this._timestamp;
+        trySetProperty(this, '_timestamp', ret);
+        return ret;
     }
     /**
      * Return a string representing the date and time in ISO 8601 format.
