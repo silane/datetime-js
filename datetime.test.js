@@ -12,94 +12,21 @@ import {
 const StdDate = globalThis.Date;
 
 
-function datetimeCmpMatcherHelper(_this, matcherName, comparison,
-                                  received, expected) {
-    const isNot = _this.isNot;
-    const options = {
-        comment: 'datetime cmp order',
-        isNot,
-        promise: _this.promise,
-    };
-
-    let pass;
-    if(comparison === '>')
-        pass = cmp(received, expected) > 0;
-    else if(comparison === '<')
-        pass = cmp(received, expected) < 0;
-    else if(comparison === '>=')
-        pass = cmp(received, expected) >= 0;
-    else if(comparison === '<=')
-        pass = cmp(received, expected) <= 0;
-    else
-        throw new Error();
-
-    const message = () =>
-        _this.utils.matcherHint(matcherName, undefined, undefined, options) +
-        '\n\n' +
-        `Expected:${isNot ? ' not' : ''} ${comparison} ${_this.utils.printExpected(expected)}\n` +
-        `Received:${isNot ? '    ' : ''} ${' '.repeat(comparison.length)} ${_this.utils.printReceived(received)}`;
-
-    return {message, pass};
-}
-
-
-expect.extend({
-    toBeEqualDateTime(received, expected) {
-        const matcherName = 'toBeEqualDateTime';
-        const options = {
-            comment: 'datetime cmp equality',
-            isNot: this.isNot,
-            promise: this.promise,
-        };
-      
-        const pass = cmp(received, expected) === 0;
-      
-        const message = pass
-            ? () =>
-                this.utils.matcherHint(matcherName, undefined, undefined, options) +
-                '\n\n' +
-                `Expected: ${this.utils.printExpected(expected)}\n` +
-                `Received: ${this.utils.printReceived(received)}`
-            : () => {
-                const diffString = diff(expected, received, {
-                    expand: this.expand,
-                });
-                return (
-                    this.utils.matcherHint(matcherName, undefined, undefined, options) +
-                    '\n\n' +
-                    (diffString && diffString.includes('- Expect')
-                        ? `Difference:\n\n${diffString}`
-                        : `Expected: ${this.utils.printExpected(expected)}\n` +
-                          `Received: ${this.utils.printReceived(received)}`)
-                );
-            };
-        return {actual: received, message, pass};
-    },
-
-    toBeGreaterDateTimeThan(received, expected) {
-        const matcherName = 'toBeGreaterDateTimeThan';
-        return datetimeCmpMatcherHelper(
-            this, matcherName, '>', received, expected);
-    },
-
-    toBeGreaterThanOrEqualDateTime(received, expected) {
-        const matcherName = 'toBeGreaterThanOrEqualDateTime';
-        return datetimeCmpMatcherHelper(
-            this, matcherName, '>=', received, expected);
-    },
-
-    toBeLessDateTimeThan(received, expected) {
-        const matcherName = 'toBeLessDateTimeThan';
-        return datetimeCmpMatcherHelper(
-            this, matcherName, '<', received, expected);
-    },
-
-    toBeLessThanOrEqualDateTime(received, expected) {
-        const matcherName = 'toBeLessThanOrEqualDateTime';
-        return datetimeCmpMatcherHelper(
-            this, matcherName, '<=', received, expected);
-    },
-});
+expect.addEqualityTesters([function(a, b) {
+    function getDateTimeType(val) { return (
+        val instanceof DateTime ? 'DateTime' :
+        val instanceof TimeDelta ? 'TimeDelta' :
+        val instanceof Date ? 'Date' :
+        val instanceof Time ? 'Time' : 'other'
+    ); }
+    const aTyep = getDateTimeType(a), bType = getDateTimeType(b);
+    if(aTyep === bType) {
+        if(aTyep === 'other') return undefined;
+        else return cmp(a, b) === 0;
+    } else {
+        return false;
+    }
+}]);
 
 
 describe('TimeDelta', () => {
@@ -321,7 +248,7 @@ describe('Date', () => {
         ['89100131', new Date(8910, 1, 31)],
         ['00311109', new Date(31, 11, 9)],
     ])('fromISOFormat("%s")', (dateString, expected) => {
-        expect(Date.fromISOFormat(dateString)).toBeEqualDateTime(expected);
+        expect(Date.fromISOFormat(dateString)).toEqual(expected);
     });
 
     test.each([
@@ -603,11 +530,11 @@ describe('Time', () => {
          new Time(23, 45, 51, 1000, new TimeZone(new TimeDelta({})))],
     ])('fromISOFormat("%s")', (timeString, expected) => {
         const t = Time.fromISOFormat(timeString);
-        expect(t).toBeEqualDateTime(expected);
+        expect(t).toEqual(expected);
         if(expected.utcOffset() == null)
             expect(t.utcOffset()).toBeNull();
         else
-            expect(t.utcOffset()).toBeEqualDateTime(expected.utcOffset());
+            expect(t.utcOffset()).toEqual(expected.utcOffset());
     });
 
     test.each([
@@ -637,7 +564,7 @@ describe('Time', () => {
             const time = new Time(2, 50, 32, 570398, null, 0);
             const replaced = time.replace(
                 {hour, minute, second, microsecond, tzInfo, fold});
-            expect(replaced).toBeEqualDateTime(expected);
+            expect(replaced).toEqual(expected);
             expect(replaced.tzInfo)
                 .toBe(tzInfo === undefined ? time.tzInfo : tzInfo);
             expect(replaced.fold).toBe(expected.fold);
@@ -827,29 +754,31 @@ describe('DateTime', () => {
     test('fromStdDate() with utc=false', () => {
         const stdDate = new StdDate(209, 2, 10, 12, 34, 52, 108);
         const date = new DateTime(209, 3, 10, 12, 34, 52, 108000);
-        expect(DateTime.fromStdDate(stdDate)).toBeEqualDateTime(date);
+        expect(DateTime.fromStdDate(stdDate)).toEqual(date);
     });
 
     test('fromStdDate() with utc=true', () => {
         const stdDate = new StdDate(StdDate.UTC(209, 2, 10, 12, 34, 52, 108));
         const date = new DateTime(209, 3, 10, 12, 34, 52, 108000);
-        expect(DateTime.fromStdDate(stdDate, true)).toBeEqualDateTime(date);
+        expect(DateTime.fromStdDate(stdDate, true)).toEqual(date);
     });
 
     test('today()', () => {
         const today = DateTime.today();
         const expected = DateTime.fromStdDate(new StdDate());
-        expect(today).toBeGreaterDateTimeThan(
-            sub(expected, new TimeDelta({seconds: 1})));
-        expect(today).toBeLessThanOrEqualDateTime(expected);
+        expect(cmp(today, expected)).toBeLessThanOrEqual(0);
+        expect(
+            cmp(sub(expected, new TimeDelta({ days: 1 })), today)
+        ).toBeLessThanOrEqual(0);
     });
 
     test('now() without argument', () => {
         const now = DateTime.now();
         const expected = DateTime.fromStdDate(new StdDate());
-        expect(now).toBeGreaterDateTimeThan(
-            sub(expected, new TimeDelta({seconds: 1})));
-        expect(now).toBeLessThanOrEqualDateTime(expected);
+        expect(cmp(now, expected)).toBeLessThanOrEqual(0);
+        expect(
+            cmp(sub(expected, new TimeDelta({ seconds: 1 })), now)
+        ).toBeLessThanOrEqual(0);
     });
 
     test('now(tz) with argument', () => {
@@ -857,24 +786,26 @@ describe('DateTime', () => {
         const now = DateTime.now(tzInfo);
         let expected = DateTime.fromStdDate(new StdDate(), true);
         expected = tzInfo.fromUTC(expected.replace({tzInfo: tzInfo}));
-        expect(now).toBeGreaterThanOrEqualDateTime(
-            sub(expected, new TimeDelta({seconds: 1})));
-        expect(now).toBeLessThanOrEqualDateTime(expected);
+        expect(cmp(now, expected)).toBeLessThanOrEqual(0);
+        expect(
+            cmp(sub(expected, new TimeDelta({ seconds: 1 })), now)
+        ).toBeLessThanOrEqual(0);
     })
 
     test('utcNow()', () => {
         const utcNow = DateTime.utcNow();
         const expected = DateTime.fromStdDate(new StdDate(), true);
-        expect(utcNow).toBeGreaterThanOrEqualDateTime(
-            sub(expected, new TimeDelta({seconds: 1})));
-        expect(utcNow).toBeLessThanOrEqualDateTime(expected);
+        expect(cmp(utcNow, expected)).toBeLessThanOrEqual(0);
+        expect(
+            cmp(sub(expected, new TimeDelta({ seconds: 1 })), utcNow)
+        ).toBeLessThanOrEqual(0);
     });
 
     test('fromTimeStamp() with timezone unspeicified', () => {
         const dt = DateTime.fromTimeStamp(819004012);
         let expected = new DateTime(1995, 12, 15, 5, 6, 52, 0, TimeZone.utc);
         expected = expected.asTimeZone(LOCALTZINFO).replace({tzInfo: null});
-        expect(dt).toBeEqualDateTime(expected);
+        expect(dt).toEqual(expected);
     });
 
     test('fromTimeStamp() with timezone specified', () => {
@@ -883,32 +814,34 @@ describe('DateTime', () => {
         const expected = new DateTime(
             2046, 3, 11, 11, 53, 14, 0,
             new TimeZone(new TimeDelta({hours: -2})));
-        expect(dt).toBeEqualDateTime(expected);
-        expect(dt.utcOffset()).toBeEqualDateTime(expected.utcOffset());
+        expect(dt).toEqual(expected);
+        expect(dt.utcOffset()).toEqual(expected.utcOffset());
     });
 
     test('utcFromTimeStamp()', () => {
         const expected = new DateTime(2031, 7, 8, 0, 9, 51);
-        expect(DateTime.utcFromTimeStamp(1941235791))
-            .toBeEqualDateTime(expected);
+        expect(DateTime.utcFromTimeStamp(1941235791)).toEqual(expected);
     });
 
     test('combine() with timezone unspecified', () => {
         const tzInfo = new TimeZone(new TimeDelta({hours: 12, minutes: 36}));
         const combined = DateTime.combine(
-            new Date(8105, 12, 9), new Time(3, 59, 12, 390590, tzInfo, 1));
-        expect(combined).toBeEqualDateTime(
-            new DateTime(8105, 12, 9, 3, 59, 12, 390590, tzInfo, 1));
+            new Date(8105, 12, 9), new Time(3, 59, 12, 390590, tzInfo, 1)
+        );
+        expect(combined).toEqual(
+            new DateTime(8105, 12, 9, 3, 59, 12, 390590, tzInfo, 1)
+        );
         expect(combined.tzInfo).toBe(tzInfo);
     });
 
     test('combine() with timezone specified', () => {
         const tzInfo = new TimeZone(new TimeDelta({hours: -22, minutes: -5}));
         const combined = DateTime.combine(
-            new Date(192, 3, 28), new Time(20, 1, 32, 525456, null, 1),
-            tzInfo);
-        expect(combined).toBeEqualDateTime(
-            new DateTime(192, 3, 28, 20, 1, 32, 525456, tzInfo, 1));
+            new Date(192, 3, 28), new Time(20, 1, 32, 525456, null, 1), tzInfo
+        );
+        expect(combined).toEqual(
+            new DateTime(192, 3, 28, 20, 1, 32, 525456, tzInfo, 1)
+        );
         expect(combined.tzInfo).toBe(tzInfo);
     });
 
@@ -926,12 +859,11 @@ describe('DateTime', () => {
         ['1049-09-13', new DateTime(1049, 9, 13)],
     ])('fromISOFormat("%s")', (timeString, expected) => {
         const received = DateTime.fromISOFormat(timeString);
-        expect(received).toBeEqualDateTime(expected);
+        expect(received).toEqual(expected);
         if(expected.utcOffset() == null)
             expect(received.utcOffset()).toBeNull();
         else
-            expect(received.utcOffset())
-                .toBeEqualDateTime(expected.utcOffset());
+            expect(received.utcOffset()).toEqual(expected.utcOffset());
     });
 
     test('toStdDate()', () => {
@@ -961,22 +893,20 @@ describe('DateTime', () => {
     test('date()', () => {
         const tzInfo = new TimeZone(new TimeDelta({hours: 11}));
         const dt = new DateTime(9284, 4, 26, 9, 34, 52, 294581, tzInfo, 1);
-        expect(dt.date()).toBeEqualDateTime(new Date(9284, 4, 26));
+        expect(dt.date()).toEqual(new Date(9284, 4, 26));
     });
 
     test('time()', () => {
         const tzInfo = new TimeZone(new TimeDelta({hours: 11}));
         const dt = new DateTime(9284, 4, 26, 9, 34, 52, 294581, tzInfo, 1);
-        expect(dt.time())
-            .toBeEqualDateTime(new Time(9, 34, 52, 294581, null, 1));
+        expect(dt.time()).toEqual(new Time(9, 34, 52, 294581, null, 1));
     });
 
     test('timetz()', () => {
         const tzInfo = new TimeZone(new TimeDelta({hours: 11}));
         const dt = new DateTime(9284, 4, 26, 9, 34, 52, 294581, tzInfo, 1);
         const received = dt.timetz();
-        expect(received)
-            .toBeEqualDateTime(new Time(9, 34, 52, 294581, tzInfo, 1));
+        expect(received).toEqual(new Time(9, 34, 52, 294581, tzInfo, 1));
         expect(received.tzInfo).toBe(tzInfo);
     });
 
@@ -1025,7 +955,7 @@ describe('DateTime', () => {
         const replaced = dt.replace({
             year, month, day, hour, minute, second, microsecond, tzInfo, fold
         });
-        expect(replaced).toBeEqualDateTime(expected);
+        expect(replaced).toEqual(expected);
         expect(replaced.tzInfo)
             .toBe(tzInfo === undefined ? dt.tzInfo : tzInfo);
         expect(replaced.fold).toBe(expected.fold);
@@ -1039,7 +969,7 @@ describe('DateTime', () => {
             {hours: 10, minutes: 20, seconds: 53, microseconds: 190489}));
         const dt = new DateTime(2083, 4, 27, 17, 42, 28, 139548, tzInfo);
         const received = dt.asTimeZone(tz);
-        expect(received).toBeEqualDateTime(expected);
+        expect(received).toEqual(expected);
         expect(received.tzInfo).toBe(expected.tzInfo);
     });
 
@@ -1048,7 +978,7 @@ describe('DateTime', () => {
         const tz = new TimeZone(new TimeDelta({hours: 21, seconds: 11}));
         const received = dt.asTimeZone(tz);
         const expected = dt.replace({tzInfo: LOCALTZINFO}).asTimeZone(tz);
-        expect(received).toBeEqualDateTime(expected);
+        expect(received).toEqual(expected);
         expect(received.tzInfo).toBe(expected.tzInfo);
     });
 
@@ -1057,7 +987,7 @@ describe('DateTime', () => {
             new TimeDelta({minutes: -35, microseconds: -3988})));
         const received = dt.asTimeZone();
         const expected = dt.asTimeZone(LOCALTZINFO).replace({tzInfo: null});
-        expect(received).toBeEqualDateTime(expected);
+        expect(received).toEqual(expected);
         expect(received.tzInfo).toBe(expected.tzInfo);
     });
 
@@ -1065,14 +995,14 @@ describe('DateTime', () => {
         const dt = new DateTime(5782, 8, 29, 16, 42, 14, 568358);
         const received = dt.asTimeZone();
         const expected = received;
-        expect(received).toBeEqualDateTime(expected);
+        expect(received).toEqual(expected);
         expect(received.tzInfo).toBe(expected.tzInfo);
     });
 
     test('utcOffset()', () => {
         const tzInfo = new TimeZone(new TimeDelta({hours: -20}));
         let dt = new DateTime(1, 1, 1, 0, 0, 0, 0, tzInfo);
-        expect(dt.utcOffset()).toBeEqualDateTime(tzInfo.utcOffset());
+        expect(dt.utcOffset()).toEqual(tzInfo.utcOffset());
         dt = new DateTime(1, 1, 1, 0, 0, 0, 0, null);
         expect(dt.utcOffset()).toBeNull();
     });
@@ -1163,9 +1093,9 @@ describe('DateTime', () => {
 
     test('date(), time(), timetz() and timeStamp() when object freezed', () => {
         const dt = Object.freeze(new DateTime(4983, 7, 30, 19, 9, 24));
-        expect(dt.date()).toBeEqualDateTime(new Date(4983, 7, 30));
-        expect(dt.time()).toBeEqualDateTime(new Time(19, 9, 24));
-        expect(dt.timetz()).toBeEqualDateTime(new Time(19, 9, 24));
+        expect(dt.date()).toEqual(new Date(4983, 7, 30));
+        expect(dt.time()).toEqual(new Time(19, 9, 24));
+        expect(dt.timetz()).toEqual(new Time(19, 9, 24));
         expect(dt.timeStamp()).toBeCloseTo(95099306964.0);
     });
 });
@@ -1221,12 +1151,12 @@ describe('add', () => {
         ]
     ])('adds %s and %s to be %s', (a, b, expected) => {
         const received = add(a, b);
-        expect(received).toBeEqualDateTime(expected);
+        expect(received).toEqual(expected);
         if(expected.utcOffset !== undefined) {
             const expectedOffset = expected.utcOffset();
             const receivedOffset = received.utcOffset();
             if(expectedOffset !== null || receivedOffset !== null) {
-                expect(receivedOffset).toBeEqualDateTime(expectedOffset);
+                expect(receivedOffset).toEqual(expectedOffset);
             }
         }
     });
@@ -1277,12 +1207,12 @@ describe('sub', () => {
         ]
     ])('subtracts %s from %s to be %s', (a, b, expected) => {
         const received = sub(b, a);
-        expect(received).toBeEqualDateTime(expected);
+        expect(received).toEqual(expected);
         if(expected.utcOffset !== undefined) {
             const expectedOffset = expected.utcOffset();
             const receivedOffset = received.utcOffset();
             if(expectedOffset !== null || receivedOffset !== null) {
-                expect(receivedOffset).toBeEqualDateTime(expectedOffset);
+                expect(receivedOffset).toEqual(expectedOffset);
             }
         }
     });
@@ -1321,7 +1251,7 @@ describe('neg', () => {
          new TimeDelta({days: -123, seconds: 2998, microseconds: -423245})],
     ])('negation of %s to be %s', (a, expected) => {
         const received = neg(a);
-        expect(received).toBeEqualDateTime(expected);
+        expect(received).toEqual(expected);
     });
 
     test('throws an error when invalid type passed', () => {
@@ -1387,10 +1317,10 @@ describe('convenient object creation functions', () => {
     test('timedelta', () => {
         expect(
             timedelta({ days: 1, microseconds: 1 })
-        ).toBeEqualDateTime(new TimeDelta({ days: 1, microseconds: 1 }));
+        ).toEqual(new TimeDelta({ days: 1, microseconds: 1 }));
     });
     test('date', () => {
-        expect(date(384, 5, 13)).toBeEqualDateTime(new Date(384, 5, 13));
+        expect(date(384, 5, 13)).toEqual(new Date(384, 5, 13));
     });
     test('timezone', () => {
         expect(timezone(new TimeDelta({}))).toBeInstanceOf(TimeZone);
@@ -1398,12 +1328,12 @@ describe('convenient object creation functions', () => {
     test('time', () => {
         expect(
             time(21, 55, 31, 233983)
-        ).toBeEqualDateTime(new Time(21, 55, 31, 233983));
+        ).toEqual(new Time(21, 55, 31, 233983));
     });
     test('datetime', () => {
         expect(
             datetime(8264, 4, 9, 3, 11, 39, 409581)
-        ).toBeEqualDateTime(new DateTime(8264, 4, 9, 3, 11, 39, 409581));
+        ).toEqual(new DateTime(8264, 4, 9, 3, 11, 39, 409581));
     });
 });
 
@@ -1446,7 +1376,7 @@ describe('dtexpr', () => {
         const received = dtexpr(templateLitral.strings,
                                 ...templateLitral.values);
         if(typeof received === 'object' && typeof received === 'object') {
-            expect(received).toBeEqualDateTime(expected);
+            expect(received).toEqual(expected);
         } else {
             expect(received).toBe(expected);
         }
